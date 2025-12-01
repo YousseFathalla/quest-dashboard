@@ -1,0 +1,117 @@
+<div class="min-h-screen bg-slate-900 text-white p-6 font-sans">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-blue-400 tracking-tight">Expanders360 OpsCenter</h1>
+      <p class="text-slate-500 text-sm">Real-time Legal Workflow Monitoring</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <div
+        class="px-3 py-1 rounded-full text-xs font-bold border"
+        [class]="
+          store.isConnected()
+            ? 'bg-green-500/10 border-green-500/50 text-green-400'
+            : 'bg-red-500/10 border-red-500/50 text-red-400'
+        "
+      >
+        {{ store.isConnected() ? '● LIVE STREAM' : '○ OFFLINE' }}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 backdrop-blur-sm">
+      <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Total Workflows</div>
+      <div class="text-3xl font-bold">{{ store.stats().totalWorkflows }}</div>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 backdrop-blur-sm">
+      <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Critical Anomalies</div>
+      <div class="text-3xl font-bold text-red-400">{{ store.criticalCount() }}</div>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 backdrop-blur-sm">
+      <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">SLA Compliance</div>
+      <div class="text-3xl font-bold text-green-400">{{ store.stats().slaCompliance }}%</div>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 backdrop-blur-sm">
+      <div class="text-slate-400 text-xs uppercase tracking-wider mb-1">Avg Cycle Time</div>
+      <div class="text-3xl font-bold text-blue-400">{{ store.stats().averageCycleTime }}</div>
+    </div>
+  </div>
+
+  <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6 backdrop-blur-sm">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-bold text-slate-200">Live Event Timeline</h2>
+      <div class="text-xs text-slate-500">Auto-scrolling (60s window)</div>
+    </div>
+
+    <div echarts [options]="chartOption()" [merge]="updateOptions()" class="h-[350px] w-full"></div>
+  </div>
+
+  <div class="bg-slate-800/50 mb-6 border border-slate-700 rounded-xl overflow-hidden">
+    <div
+      class="p-3 bg-slate-800/80 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase"
+    >
+      Recent Event Log
+    </div>
+    <div class="max-h-[200px] overflow-y-auto">
+      @for (event of store.recentEvents(); track event.id) {
+      <div
+        class="flex items-center px-4 py-3 border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+      >
+        <span
+          class="w-2 h-2 rounded-full mr-3"
+          [class.bg-red-500]="event.severity === 'CRITICAL'"
+          [class.bg-yellow-500]="event.severity === 'WARNING'"
+          [class.bg-blue-500]="event.severity === 'INFO'"
+        ></span>
+        <span class="font-mono text-xs text-slate-500 mr-4">{{
+          event.timestamp | date : 'HH:mm:ss'
+        }}</span>
+        <span class="text-sm font-medium mr-auto">{{ event.type }}</span>
+        <span class="text-xs px-2 py-1 rounded bg-slate-900 text-slate-400 border border-slate-700">
+          {{ event.severity }}
+        </span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 backdrop-blur-sm">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold text-slate-200">Anomaly Heatmap</h2>
+        <div class="text-xs text-slate-500">Intensity by Hour & Severity</div>
+      </div>
+
+      <div
+        echarts
+        [options]="heatmapOption()"
+        [merge]="updateHeatmapOptions()"
+        class="h-[300px] w-full"
+      ></div>
+    </div>
+
+    <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4 backdrop-blur-sm flex flex-col">
+
+      <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-slate-200">Workflow Volume</h2>
+
+          <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
+            @for (range of timeRanges; track range) {
+              <button
+                (click)="store.updateTimeRange(range)"
+                class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+                [class]="store.timeRange() === range ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'">
+                {{ range }}
+              </button>
+            }
+          </div>
+      </div>
+
+      <div echarts
+           [options]="volumeOption()"
+           [merge]="updateVolumeOption()"
+           class="flex-1 min-h-[300px] w-full">
+      </div>
+    </div>
+  </div>
+</div>

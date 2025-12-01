@@ -1,0 +1,26 @@
+services:
+  # 1. The Backend Service
+  backend:
+    build: ./backend
+    container_name: quest-backend
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production
+
+  # 2. The Frontend Service
+  frontend:
+    build: ./frontend
+    container_name: quest-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+# 3. Network Configuration
+networks:
+  default:
+    name: quest-network
+    driver: bridge
