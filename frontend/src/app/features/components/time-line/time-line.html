@@ -1,0 +1,32 @@
+<div class="timeline-card-wrapper">
+  <mat-card>
+    <mat-card-header class="flex-wrap gap-4">
+      <mat-card-title> Live Event Timeline </mat-card-title>
+      <mat-card-subtitle> Auto-scrolling on every new event </mat-card-subtitle>
+
+      <div class="timeline-actions">
+        <mat-chip-listbox
+          [value]="selectedFilter()"
+          (change)="onFilterChange($event.value)"
+          aria-label="Filter events"
+          class="filter-chip-set"
+        >
+          <mat-chip-option value="ALL">All Events</mat-chip-option>
+          <mat-chip-option value="COMPLETED" class="success">Completed</mat-chip-option>
+          <mat-chip-option value="PENDING" class="warning">Pending</mat-chip-option>
+          <mat-chip-option value="ANOMALY" class="error">Anomalies</mat-chip-option>
+        </mat-chip-listbox>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div
+        echarts
+        [options]="chartOption()"
+        [merge]="updateOptions()"
+        class="chart-container"
+      ></div>
+    </mat-card-content>
+
+  </mat-card>
+</div>

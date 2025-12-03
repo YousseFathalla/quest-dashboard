@@ -10,9 +10,27 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "scss",
+          "changeDetection": "OnPush"
+        },
+        "@schematics/angular:service": {
+          "flat": false,
+          "type": "service"
+        },
+        "@schematics/angular:directive": {
+          "type": "directive",
+          "flat": false
+        },
+        "@schematics/angular:pipe": {
+          "flat": false,
+          "typeSeparator": "."
+        },
+        "@schematics/angular:guard": {
+          "flat": false,
+          "typeSeparator": "."
         }
       },
+
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -29,9 +47,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss", "src/tailwind.css"]
           },
           "configurations": {
             "production": {

@@ -1,0 +1,41 @@
+services:
+  # Backend Service (Development Mode)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: quest-backend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+
+  # Frontend Service (Development Mode)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: quest-frontend-dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.angular
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    command: npm start -- --host 0.0.0.0
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: quest-network-dev
+    driver: bridge
+

@@ -1,0 +1,33 @@
+<button
+  type="button"
+  matIconButton
+  [matMenuTriggerFor]="themeMenu"
+  [aria-label]="'Select theme. Current: ' + currentThemeOption().name"
+>
+  <mat-icon>palette</mat-icon>
+</button>
+
+<mat-menu #themeMenu="matMenu" class="theme-menu">
+  <mat-radio-group [value]="currentTheme()" (change)="onThemeChange($event.value)" class="flex flex-col">
+    @for (theme of themes; track theme.id) {
+      <mat-radio-button 
+        [value]="theme.id" 
+        class="w-full pe-3 hover:bg-(--mat-sys-surface-variant)"
+        [class.bg-(--mat-sys-surface-container-highest)]="currentTheme() === theme.id"
+        [attr.aria-label]="theme.name"
+        [attr.aria-checked]="currentTheme() === theme.id"
+        role="menuitemradio"
+        (click)="handleRadioClick(theme.id)"
+      >
+        <span class="theme-name">{{ theme.name }}</span>
+        <div class="theme-swatch">
+          <div
+            class="swatch-color"
+            [style.background]="theme.primaryColor"
+          ></div>
+        </div>
+      </mat-radio-button>
+    }
+  </mat-radio-group>
+</mat-menu>
+

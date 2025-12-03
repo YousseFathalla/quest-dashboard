@@ -1,0 +1,19 @@
+# Development Dockerfile for Frontend
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
+
+# Copy source code (will be overridden by volume mount in docker-compose)
+COPY . .
+
+# Expose Angular dev server port
+EXPOSE 4200
+
+# Default command (will be overridden by docker-compose.dev.yml)
+# Start Angular dev server
+CMD ["npm", "start"]
+

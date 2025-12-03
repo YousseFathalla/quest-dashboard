@@ -1,0 +1,65 @@
+<div class="dialog-container">
+  <h2 class="mat-font-title-lg" mat-dialog-title>
+    Event Details
+  </h2>
+
+  <mat-dialog-content>
+    <div class="details-header">
+      <div class="detail-item">
+        <span class="mat-font-label-sm mat-text-on-surface-variant">Time Slot:</span>
+        <span class="mat-font-body-md">{{ data.timeSlot }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="mat-font-label-sm mat-text-on-surface-variant">Severity:</span>
+        <mat-chip [color]="getSeverityColor(data.severity)">
+          {{ data.severity }}
+        </mat-chip>
+      </div>
+      <div class="detail-item">
+        <span class="mat-font-label-sm mat-text-on-surface-variant">Total Events:</span>
+        <span class="mat-font-body-md">{{ data.events.length }}</span>
+      </div>
+    </div>
+
+    <div class="events-list">
+      @for (event of data.events; track event.id) {
+        <mat-card class="event-card">
+          <mat-card-content>
+            <div class="event-row">
+              <span
+                [style.background-color]="getSeverityDotColor(event.severity)"
+                class="event-dot"
+                [attr.aria-label]="'Severity: ' + event.severity"
+              ></span>
+              <div class="event-info">
+                <div class="event-time">
+                  {{ event.timestamp | date : 'MMM d, y, h:mm:ss a' }}
+                </div>
+                <div class="event-type">
+                  {{ formatEventType(event.type) }}
+                </div>
+                @if (event.message) {
+                  <div class="event-message">
+                    {{ event.message }}
+                  </div>
+                }
+              </div>
+              <mat-chip [color]="getSeverityColor(event.severity)">
+                {{ event.severity }}
+              </mat-chip>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      } @empty {
+        <div class="empty-state">
+          <p class="mat-font-body-md mat-text-on-surface-variant">No events found for this time slot and severity.</p>
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>
+

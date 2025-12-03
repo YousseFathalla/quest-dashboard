@@ -1,0 +1,32 @@
+<div>
+  <mat-card>
+    <mat-card-header>
+      <div class="mat-font-title-sm">Recent Event Log</div>
+    </mat-card-header>
+    <mat-card-content>
+      <div>
+        @for (event of store.recentEvents(); track event.id) {
+          @let status = getEventStatus(event);
+          <div class="event-log-item">
+            <span
+              [class]="getStatusEventLogDot(status)"
+              class="event-log-dot"
+            ></span>
+            <span class="mat-font-body-sm mat-text-on-surface-variant event-log-timestamp">
+              {{ event.timestamp | date : 'HH:mm:ss' }}
+            </span>
+            <span class="mat-font-body-md event-log-type">
+              {{ formatEventTypeWithAcronyms(event.type) }}
+            </span>
+            <div
+              class="rounded-md px-2 py-1 min-w-22 text-center mat-font-body-sm mat-border-subtle"
+              [class]="getStatusEventLogChip(status)"
+            >
+              {{ status | titlecase }}
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

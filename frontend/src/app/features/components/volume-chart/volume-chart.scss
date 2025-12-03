@@ -1,0 +1,24 @@
+.card-flex {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-content-flex {
+  flex: 1;
+}
+
+.chart-container-flex {
+  flex: 1;
+  min-height: 300px;
+  width: 100%;
+  height: 100%;
+}
+

@@ -40,6 +40,12 @@
     "tailwindcss": "^4.1.17",
     "tslib": "^2.3.0"
   },
+  "overrides": {
+    "@ngrx/signals": {
+      "@angular/core": "$@angular/core",
+      "@angular/common": "$@angular/common"
+    }
+  },
   "devDependencies": {
     "@angular/build": "^21.0.1",
     "@angular/cli": "^21.0.1",

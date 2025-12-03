@@ -1,0 +1,18 @@
+# Development Dockerfile for Backend
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code (will be overridden by volume mount in docker-compose)
+COPY . .
+
+# Expose backend port
+EXPOSE 3000
+
+# Use nodemon for hot-reload (will be set via command in docker-compose)
+CMD ["node", "server.js"]
+
