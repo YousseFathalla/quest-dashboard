@@ -75,7 +75,7 @@ export const DashboardStore = signalStore(
         tap(() => patchState(store, { loading: true, error: null })),
         switchMap(() =>
           dashboardService.getSnapshot().pipe(
-            delay(2000), // Keep the user-requested delay
+            // delay(2000), // Keep the user-requested delay
             tap(({ overview, events }) => {
               patchState(store, {
                 stats: overview,
