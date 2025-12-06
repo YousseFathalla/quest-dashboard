@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Volume Chart component.
+ * Displays a bar/line combo chart showing total event volume and critical errors over time.
+ * Supports filtering by 6h, 12h, and 24h time ranges.
+ */
+
 import {
   Component,
   effect,
@@ -157,6 +163,13 @@ export class VolumeChart {
     );
   }
 
+  /**
+   * Filters events based on the selected time range.
+   *
+   * @param {LogEvent[]} events - The list of events to filter.
+   * @param {TimeRange} range - The time range ('6h', '12h', '24h').
+   * @returns {LogEvent[]} The filtered list of events.
+   */
   private filterEventsByTimeRange(events: LogEvent[], range: TimeRange): LogEvent[] {
     const hoursMap: Record<TimeRange, number> = {
       '6h': 6,
@@ -168,6 +181,12 @@ export class VolumeChart {
     return events.filter((e) => e.timestamp >= cutoffTimestamp);
   }
 
+  /**
+   * Generates hour labels for the x-axis based on the time range.
+   *
+   * @param {TimeRange} range - The selected time range.
+   * @returns {string[]} An array of hour strings (e.g., "14:00").
+   */
   private getHoursForRange(range: TimeRange): string[] {
     const hoursMap: Record<TimeRange, number> = {
       '6h': 6,
@@ -187,6 +206,11 @@ export class VolumeChart {
     return hours;
   }
 
+  /**
+   * Handles changes to the time range toggle button.
+   *
+   * @param {MatButtonToggleChange} event - The change event from the button toggle group.
+   */
   onTimeRangeChange(event: MatButtonToggleChange): void {
     if (event.value) {
       this.selectedTimeRange.set(event.value as TimeRange);

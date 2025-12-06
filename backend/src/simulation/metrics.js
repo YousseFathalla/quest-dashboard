@@ -1,5 +1,19 @@
+/**
+ * @fileoverview Utility functions for computing metrics and statistics from the data store.
+ */
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/**
+ * Computes overview statistics such as SLA compliance, cycle time, and anomaly counts.
+ *
+ * @param {Object} store - The data store containing events and anomalies.
+ * @returns {Object} An object containing calculated metrics:
+ *  - slaCompliance {number}: Percentage of non-anomaly events in the last 200 events.
+ *  - cycleTime {number}: Average cycle time for completed events.
+ *  - activeAnomalies {number}: Total count of anomalies.
+ *  - totalWorkflowsToday {number}: Total number of events in the store.
+ */
 export function computeOverview(store) {
   const events = store.events || [];
   const anomalies = store.anomalies || [];
@@ -36,6 +50,13 @@ export function computeOverview(store) {
   };
 }
 
+/**
+ * Computes the volume of events per hour for the last N hours.
+ *
+ * @param {Object} store - The data store.
+ * @param {number} [hours=24] - The number of past hours to analyze.
+ * @returns {Array<Object>} An array of objects representing each hour, containing counts for 'completed', 'pending', and 'anomaly'.
+ */
 export function computeVolumePerHour(store, hours = 24) {
   const buckets = [];
   const now = new Date();
@@ -69,6 +90,13 @@ export function computeVolumePerHour(store, hours = 24) {
   }));
 }
 
+/**
+ * Computes data for the heatmap visualization.
+ * Aggregates anomalies by hour of day and severity level.
+ *
+ * @param {Object} store - The data store.
+ * @returns {Array<Object>} An array of cells, each with 'hour', 'severity', and 'count'.
+ */
 export function computeHeatmapCells(store) {
   const counts = {};
   (store.anomalies || []).forEach((a) => {
@@ -85,5 +113,3 @@ export function computeHeatmapCells(store) {
 
   return cells;
 }
-
-

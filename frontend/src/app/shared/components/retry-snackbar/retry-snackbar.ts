@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Snackbar component for connection retry status.
+ * Displays a message, icon, and optional countdown timer for reconnection attempts.
+ */
+
 import { ChangeDetectionStrategy, Component, Signal, inject } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
@@ -31,6 +36,8 @@ export interface RetrySnackbarData {
   },
 })
 export class RetrySnackbar {
+  /** The data to display in the snackbar. */
   readonly data = inject<RetrySnackbarData>(MAT_SNACK_BAR_DATA);
+  /** Reference to the snackbar container. */
   readonly snackBarRef = inject(MatSnackBarRef);
 }

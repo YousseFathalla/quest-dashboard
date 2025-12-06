@@ -1,12 +1,24 @@
-// src/simulation/generator.js
+/**
+ * @fileoverview Generators for initial data seeding and random value creation.
+ */
+
 import { store } from "../data/store.js";
 import { computeOverview } from "./metrics.js";
 
-// ✅ NEW: Export this helper so engine.js can use it
+/**
+ * Updates the global store's overview metrics based on current data.
+ * @returns {void}
+ */
 export function updateMetrics() {
   store.overview = computeOverview(store);
 }
 
+/**
+ * Seeds the store with initial historical data.
+ * Generates 200 events spread over the last 24 hours.
+ *
+ * @returns {void}
+ */
 export function seedInitialData() {
   const now = Date.now();
 
@@ -30,6 +42,14 @@ export function seedInitialData() {
   updateMetrics();
 }
 
+/**
+ * Returns a random event type based on weighted probabilities.
+ * - 60% 'completed'
+ * - 20% 'pending'
+ * - 20% 'anomaly'
+ *
+ * @returns {string} The event type.
+ */
 export function randomType() {
   const r = Math.random();
   if (r < 0.6) return "completed"; // 60%
@@ -37,6 +57,11 @@ export function randomType() {
   return "anomaly"; // 20%
 }
 
+/**
+ * Returns a random severity level between 1 and 5.
+ *
+ * @returns {number} The severity level.
+ */
 export function randomSeverity() {
   return Math.ceil(Math.random() * 5);
 }

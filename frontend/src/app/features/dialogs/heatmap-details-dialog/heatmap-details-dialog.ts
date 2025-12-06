@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Dialog component for displaying heatmap details.
+ * Shows a list of anomalies for a specific time slot and severity.
+ */
+
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -25,10 +30,20 @@ export class HeatmapDetailsDialog {
   readonly getStatusDot = getStatusEventLogDot;
   readonly getStatusChip = getStatusEventLogChip;
 
+  /**
+   * Returns a display label for the event type.
+   * @param {EventType} type - The event type.
+   * @returns {string} The display label.
+   */
   getEventTypeLabel(type: EventType): string {
     return type === 'anomaly' ? 'Critical' : type;
   }
 
+  /**
+   * Returns the CSS class for the severity icon.
+   * @param {Severity} [severity] - The severity level.
+   * @returns {string} CSS class string.
+   */
   getSeverityIconClass(severity: Severity | undefined): string {
     if (severity === undefined) return 'warning mat-text-primary'; // Default/Warning
 
@@ -44,6 +59,11 @@ export class HeatmapDetailsDialog {
     return 'warning mat-text-primary';
   }
 
+  /**
+   * Returns the CSS color class based on severity.
+   * @param {Severity} [severity] - The severity level.
+   * @returns {string} CSS class string.
+   */
   getSeverityColor(severity: Severity | undefined): string {
     if (severity === undefined) return 'warning mat-text-on-primary mat-bg-primary'; // Default
 
@@ -59,6 +79,11 @@ export class HeatmapDetailsDialog {
     return 'warning mat-text-on-primary mat-bg-primary';
   }
 
+  /**
+   * Returns a human-readable severity label.
+   * @param {Severity} [severity] - The severity level.
+   * @returns {string} Severity label (e.g., "Severity 3").
+   */
   getSeverityLabel(severity: Severity | undefined): string {
     let val: number;
     if (severity === undefined) val = 0;

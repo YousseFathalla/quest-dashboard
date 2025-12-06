@@ -1,7 +1,18 @@
+/**
+ * @fileoverview Application logger service.
+ * Provides logging methods that only output to the console in development mode.
+ */
+
 import { Injectable, isDevMode } from '@angular/core';
 
 @Injectable({ providedIn: 'root'})
 export class LoggerService {
+  /**
+   * Logs an error message.
+   *
+   * @param {string} message - The error message.
+   * @param {unknown} [error] - The error object or context.
+   */
   error(message: string, error?: unknown): void {
     if (isDevMode()) {
       if (error) {
@@ -12,6 +23,12 @@ export class LoggerService {
     }
   }
 
+  /**
+   * Logs a warning message.
+   *
+   * @param {string} message - The warning message.
+   * @param {unknown} [context] - Additional context.
+   */
   warn(message: string, context?: unknown): void {
     if (isDevMode()) {
       if (context) {
@@ -22,6 +39,12 @@ export class LoggerService {
     }
   }
 
+  /**
+   * Logs an informational message.
+   *
+   * @param {string} message - The info message.
+   * @param {unknown} [context] - Additional context.
+   */
   info(message: string, context?: unknown): void {
     if (isDevMode()) {
       if (context) {
@@ -32,6 +55,12 @@ export class LoggerService {
     }
   }
 
+  /**
+   * Logs a debug message.
+   *
+   * @param {string} message - The debug message.
+   * @param {unknown} [context] - Additional context.
+   */
   debug(message: string, context?: unknown): void {
     if (isDevMode()) {
       if (context) {
@@ -42,4 +71,3 @@ export class LoggerService {
     }
   }
 }
-

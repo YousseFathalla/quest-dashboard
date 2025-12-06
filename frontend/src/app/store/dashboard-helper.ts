@@ -1,5 +1,18 @@
+/**
+ * @fileoverview Helper functions for updating the Dashboard state.
+ * Contains pure functions to calculate new state based on incoming events.
+ */
+
 import { DashboardState, LogEvent } from '@models/dashboard.types';
 
+/**
+ * Calculates the new dashboard state based on an incoming log event.
+ * Updates the event list (maintaining a fixed size), and recalculates overview statistics.
+ *
+ * @param {DashboardState} state - The current state of the dashboard.
+ * @param {LogEvent} newEvent - The new event received from the stream.
+ * @returns {Partial<DashboardState>} A partial state object with updated events and stats.
+ */
 export function calculateStateFromEvent(
   state: DashboardState,
   newEvent: LogEvent

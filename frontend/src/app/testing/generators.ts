@@ -1,14 +1,21 @@
+/**
+ * @fileoverview Property-based testing generators using fast-check.
+ * Provides arbitrary generators for domain models like LogEvents, Timestamps, and Severities.
+ */
+
 import * as fc from 'fast-check';
 import { LogEvent, EventType, Severity } from '@models/dashboard.types';
 
 /**
- * Arbitrary generator for EventType values
+ * Arbitrary generator for EventType values.
+ * @returns {fc.Arbitrary<EventType>} Generator for 'completed', 'pending', or 'anomaly'.
  */
 export const arbEventType = (): fc.Arbitrary<EventType> =>
   fc.constantFrom<EventType>('completed', 'pending', 'anomaly');
 
 /**
- * Arbitrary generator for Severity values
+ * Arbitrary generator for Severity values.
+ * @returns {fc.Arbitrary<Severity>} Generator for 'normal', 'high', or integer 1-10.
  */
 export const arbSeverity = (): fc.Arbitrary<Severity> =>
   fc.oneof(
@@ -17,7 +24,8 @@ export const arbSeverity = (): fc.Arbitrary<Severity> =>
   );
 
 /**
- * Arbitrary generator for timestamps within a reasonable range (last 24 hours)
+ * Arbitrary generator for timestamps within the last 24 hours.
+ * @returns {fc.Arbitrary<number>} Generator for timestamps (ms).
  */
 export const arbTimestamp = (): fc.Arbitrary<number> => {
   const now = Date.now();
@@ -26,7 +34,8 @@ export const arbTimestamp = (): fc.Arbitrary<number> => {
 };
 
 /**
- * Arbitrary generator for LogEvent objects
+ * Arbitrary generator for LogEvent objects.
+ * @returns {fc.Arbitrary<LogEvent>} Generator for LogEvent objects.
  */
 export const arbLogEvent = (): fc.Arbitrary<LogEvent> =>
   fc.record({
@@ -38,7 +47,10 @@ export const arbLogEvent = (): fc.Arbitrary<LogEvent> =>
   });
 
 /**
- * Arbitrary generator for arrays of LogEvents
+ * Arbitrary generator for arrays of LogEvents.
+ * @param {number} [minLength=0] - Minimum length of the array.
+ * @param {number} [maxLength=100] - Maximum length of the array.
+ * @returns {fc.Arbitrary<LogEvent[]>} Generator for arrays of LogEvent.
  */
 export const arbLogEvents = (
   minLength = 0,
@@ -47,19 +59,23 @@ export const arbLogEvents = (
   fc.array(arbLogEvent(), { minLength, maxLength });
 
 /**
- * Arbitrary generator for time range values
+ * Arbitrary generator for time range values.
+ * @returns {fc.Arbitrary<'6h' | '12h' | '24h'>} Generator for time range strings.
  */
 export const arbTimeRange = (): fc.Arbitrary<'6h' | '12h' | '24h'> =>
   fc.constantFrom('6h', '12h', '24h');
 
 /**
- * Arbitrary generator for hour values (0-23)
+ * Arbitrary generator for hour values (0-23).
+ * @returns {fc.Arbitrary<number>} Generator for integers 0-23.
  */
 export const arbHour = (): fc.Arbitrary<number> =>
   fc.integer({ min: 0, max: 23 });
 
 /**
- * Generate a timestamp for a specific hour today
+ * Generate a timestamp for a specific hour today.
+ * @param {number} hour - The hour (0-23).
+ * @returns {number} The timestamp in ms.
  */
 export const timestampForHour = (hour: number): number => {
   const now = new Date();
@@ -68,7 +84,9 @@ export const timestampForHour = (hour: number): number => {
 };
 
 /**
- * Arbitrary generator for LogEvent with a specific hour
+ * Arbitrary generator for LogEvent occurring at a specific hour.
+ * @param {number} hour - The hour (0-23).
+ * @returns {fc.Arbitrary<LogEvent>} Generator for LogEvent.
  */
 export const arbLogEventAtHour = (hour: number): fc.Arbitrary<LogEvent> =>
   fc.record({

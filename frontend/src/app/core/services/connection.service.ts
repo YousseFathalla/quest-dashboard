@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Service for managing connection status notifications.
+ * Displays snackbars for disconnection, reconnection, and errors.
+ */
+
 import { Injectable, inject } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
 import { RetrySnackbar } from '@shared/components/retry-snackbar/retry-snackbar';
@@ -8,7 +13,9 @@ export class ConnectionService {
   private snackBarRef: MatSnackBarRef<RetrySnackbar> | null = null;
   private hasShownDisconnect = false;
 
-  /** Call when stream disconnects */
+  /**
+   * Displays a persistent snackbar indicating that the stream is disconnected.
+   */
   showDisconnected(): void {
     this.hasShownDisconnect = true;
     this.dismissSnackbar();
@@ -24,7 +31,10 @@ export class ConnectionService {
     });
   }
 
-  /** Call when stream reconnects - only shows toast if we previously disconnected */
+  /**
+   * Displays a success snackbar indicating that the stream has reconnected.
+   * Only shows if a disconnection message was previously shown.
+   */
   showConnected(): void {
     if (!this.hasShownDisconnect) return;
 
@@ -42,6 +52,11 @@ export class ConnectionService {
     });
   }
 
+  /**
+   * Displays a general error message in a snackbar.
+   *
+   * @param {string} message - The error message to display.
+   */
   showError(message: string): void {
     this.snackBar.open(message, 'Dismiss', {
       duration: 5000,
@@ -51,6 +66,9 @@ export class ConnectionService {
     });
   }
 
+  /**
+   * Dismisses the currently active snackbar, if any.
+   */
   private dismissSnackbar(): void {
     this.snackBarRef?.dismiss();
     this.snackBarRef = null;

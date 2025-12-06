@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Timeline visualization component.
+ * Displays a scatter plot of events over time, allowing filtering by event type.
+ */
+
 import {
   Component,
   inject,
@@ -44,6 +49,7 @@ export class TimeLine {
   readonly store = inject(DashboardStore);
 
   // ✅ 2. Define Filters (Matches Store Types)
+  /** Available filters for the timeline. */
   readonly filters = signal<DashboardFilter[]>(['all', 'completed', 'pending', 'anomaly']);
 
   // ✅ 3. Responsive Logic
@@ -63,6 +69,10 @@ export class TimeLine {
   }
 
   // ✅ 4. Interaction (Delegates to Store)
+  /**
+   * Handles filter changes. Toggles between specific filter and 'all'.
+   * @param {DashboardFilter} filter - The selected filter.
+   */
   onFilterChange(filter: DashboardFilter): void {
     const next = this.store.filter() === filter ? 'all' : filter;
     this.store.setFilter(next);
@@ -167,6 +177,11 @@ export class TimeLine {
 
   // --- Helpers (Inlined for Stability) ---
 
+  /**
+   * Returns the color associated with an event status.
+   * @param {string} status - The event status.
+   * @returns {string} Hex color string.
+   */
   private getStatusColor(status: string): string {
     switch (status) {
       case 'completed':
@@ -180,15 +195,30 @@ export class TimeLine {
     }
   }
 
+  /**
+   * Checks if the severity is considered high.
+   * @param {number|string} [severity] - The severity level.
+   * @returns {boolean} True if high severity.
+   */
   private isHighSeverity(severity?: number | string): boolean {
     if (typeof severity === 'number') return severity > 3;
     return severity === 'high';
   }
 
+  /**
+   * Returns the border color based on severity.
+   * @param {number|string} [severity] - The severity level.
+   * @returns {string} Hex color string or 'transparent'.
+   */
   private getSeverityColor(severity?: number | string): string {
     return this.isHighSeverity(severity) ? '#b91c1c' : 'transparent';
   }
 
+  /**
+   * Generates the HTML content for the chart tooltip.
+   * @param {ChartDataPoint} data - The data point.
+   * @returns {string} HTML string.
+   */
   private getTooltipHtml(data: ChartDataPoint): string {
     if (!data) return '';
     const date = new Date(data.timestamp);
