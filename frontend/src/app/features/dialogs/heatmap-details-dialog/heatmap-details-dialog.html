@@ -1,65 +1,61 @@
-<div class="dialog-container">
-  <h2 class="mat-font-title-lg" mat-dialog-title>
-    Event Details
-  </h2>
+<h1 matDialogTitle>Event Details</h1>
 
-  <mat-dialog-content>
-    <div class="details-header">
-      <div class="detail-item">
-        <span class="mat-font-label-sm mat-text-on-surface-variant">Time Slot:</span>
-        <span class="mat-font-body-md">{{ data.timeSlot }}</span>
-      </div>
-      <div class="detail-item">
-        <span class="mat-font-label-sm mat-text-on-surface-variant">Severity:</span>
-        <mat-chip [color]="getSeverityColor(data.severity)">
-          {{ data.severity }}
-        </mat-chip>
-      </div>
-      <div class="detail-item">
-        <span class="mat-font-label-sm mat-text-on-surface-variant">Total Events:</span>
-        <span class="mat-font-body-md">{{ data.events.length }}</span>
-      </div>
+<mat-dialog-content>
+  <div
+    class="flex justify-between border-y border-outline-variant py-3 md:px-11 px-4 items-center *:flex *:flex-col *:items-center"
+  >
+    <div>
+      <span class="mat-font-label-lg">Time Slot</span>
+      <span class="mat-font-body-lg">{{ data.timeSlot }}</span>
     </div>
+    <div>
+      <span class="mat-font-label-lg">Total Events</span>
+      <span class="mat-font-body-lg">{{ data.events.length }}</span>
+    </div>
+    <div>
+      <span class="mat-font-label-lg">Status</span>
+      <span class="px-1 rounded text-on-error bg-error mat-font-body-lg">Critical</span>
+    </div>
+  </div>
+  <div class="flex justify-between items-center px-6 py-4 md:px-12 bg-surface-container">
+    <div class="mat-font-label-lg">Event Info</div>
+    <div class="mat-font-label-lg">Severity</div>
+  </div>
+  <div class="max-h-[450px] overflow-y-auto custom-scrollbar">
+    @for (event of data.events; track event.id) {
+    <div
+      class="flex items-center px-2 py-4 border-b md:px-6 border-outline-variant hover:bg-surface-container-high"
+    >
+      <!-- Left Side: Icon + Time + Subtext -->
+      <div class="flex flex-1 gap-2 items-center">
+        @if (event.type === 'anomaly' || event.type === 'pending' || event.type === 'completed') {
+        <mat-icon class="status-icon" [class]="getSeverityIconClass(event.severity)">
+          warning
+        </mat-icon>
+        }
 
-    <div class="events-list">
-      @for (event of data.events; track event.id) {
-        <mat-card class="event-card">
-          <mat-card-content>
-            <div class="event-row">
-              <span
-                [style.background-color]="getSeverityDotColor(event.severity)"
-                class="event-dot"
-                [attr.aria-label]="'Severity: ' + event.severity"
-              ></span>
-              <div class="event-info">
-                <div class="event-time">
-                  {{ event.timestamp | date : 'MMM d, y, h:mm:ss a' }}
-                </div>
-                <div class="event-type">
-                  {{ formatEventType(event.type) }}
-                </div>
-                @if (event.message) {
-                  <div class="event-message">
-                    {{ event.message }}
-                  </div>
-                }
-              </div>
-              <mat-chip [color]="getSeverityColor(event.severity)">
-                {{ event.severity }}
-              </mat-chip>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      } @empty {
-        <div class="empty-state">
-          <p class="mat-font-body-md mat-text-on-surface-variant">No events found for this time slot and severity.</p>
+        <div class="flex flex-col">
+          <div>
+            <span class="font-body-sm">{{ event.timestamp | date : 'MMM d, y, h:mm:ss a' }}</span>
+          </div>
+          <div class="mat-font-body-sm text-error">Critical issue reported</div>
         </div>
-      }
+      </div>
+
+      <!-- Right Side: Severity Badge -->
+      <span class="px-2 py-1 rounded-lg" [class]="getSeverityColor(event.severity)">
+        {{ getSeverityLabel(event.severity) }}
+      </span>
     </div>
-  </mat-dialog-content>
+    } @empty {
+    <div class="flex flex-col items-center">
+      <mat-icon>inbox</mat-icon>
+      <span>No events found for this time slot.</span>
+    </div>
+    }
+  </div>
+</mat-dialog-content>
 
-  <mat-dialog-actions align="end">
-    <button mat-button (click)="close()">Close</button>
-  </mat-dialog-actions>
-</div>
-
+<mat-dialog-actions>
+  <button matButton mat-dialog-close aria-label="Close dialog">Close</button>
+</mat-dialog-actions>

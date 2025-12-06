@@ -1,30 +1,25 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { MatIcon } from '@angular/material/icon';
-import { MatCard, MatCardContent, MatCardHeader, MatCardTitle } from '@angular/material/card';
-import { DashboardStore } from '@core/store/dashboard.store';
+import { DashboardStore } from 'app/store/dashboard.store';
 import { Header } from '@layout/header/header';
 import { EventLog } from '@features/components/event-log/event-log';
-import { HeatMap } from '@features/components/heat-map/heat-map';
 import { StatsCards } from '@features/components/stats-cards/stats-cards';
 import { TimeLine } from '@features/components/time-line/time-line';
-import { VolumeChart } from '@features/components/volume-chart/volume-chart';
 import { MatDivider } from '@angular/material/divider';
+import { WorkflowHeader } from '@features/components/workflow-header/workflow-header';
+import { HeatMap } from '@features/components/heat-map/heat-map';
+import { VolumeChart } from '@features/components/volume-chart/volume-chart';
 
 @Component({
   selector: 'app-root',
   imports: [
     Header,
-    MatIcon,
-    MatCard,
-    MatCardContent,
     StatsCards,
     TimeLine,
     EventLog,
+    MatDivider,
+    WorkflowHeader,
     HeatMap,
     VolumeChart,
-    MatCardHeader,
-    MatCardTitle,
-    MatDivider
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -32,9 +27,4 @@ import { MatDivider } from '@angular/material/divider';
 })
 export class App {
   readonly store = inject(DashboardStore);
-
-  constructor() {
-    // Initialize WebSocket connection on app startup
-    this.store.connect();
-  }
 }

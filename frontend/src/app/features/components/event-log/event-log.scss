@@ -1,7 +1,8 @@
 
-.event-log-item {
+.event-log {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 12px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
@@ -16,7 +17,7 @@
 
 .event-log-timestamp {
   font-family: monospace;
-  margin-right: 1rem;
+  margin-right: 5px;
 }
 
 .event-log-type {

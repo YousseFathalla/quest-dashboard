@@ -3,7 +3,7 @@
     <div class="card-header-flex">
       <div class="mat-font-title-md">Workflow Volume</div>
       <mat-button-toggle-group
-        [value]="store.timeRange()"
+        [value]="selectedTimeRange()"
         (change)="onTimeRangeChange($event)"
         aria-label="Select time range"
       >
@@ -24,4 +24,3 @@
     ></div>
   </mat-card-content>
 </mat-card>
-

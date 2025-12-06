@@ -14,21 +14,29 @@ import {
   MatCardContent,
   MatCardTitle,
   MatCardSubtitle,
-  MatCardActions,
 } from '@angular/material/card';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { DashboardStore } from '@core/store/dashboard.store';
+import { DashboardStore } from 'app/store/dashboard.store';
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
-import { EventSeverity, DashboardEvent } from '@core/models/dashboard.types';
-import { getEventStatus, getStatusColorCircle, getTooltipStatusColor } from '@core/utils/event-status.utils';
+import { LogEvent } from '@models/dashboard.types';
 import type { EChartsOption } from 'echarts';
 import {
   HeatmapDetailsDialog,
   HeatmapDetailsDialogData,
 } from '@features/dialogs/heatmap-details-dialog/heatmap-details-dialog';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+
+// Severity levels 1-5 (1=low, 5=critical)
+const SEVERITY_LEVELS = [1, 2, 3, 4, 5];
+const SEVERITY_LABELS = ['Sev 1', 'Sev 2', 'Sev 3', 'Sev 4', 'Sev 5'];
+
+// Severity-based colors (lighter to darker red)
+const SEVERITY_COLORS: Record<number, string> = {
+  1: '#fecaca', // red-200
+  2: '#fca5a5', // red-300
+  3: '#f87171', // red-400
+  4: '#ef4444', // red-500
+  5: '#dc2626', // red-600
+};
 
 @Component({
   selector: 'app-heat-map',
@@ -37,12 +45,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatCard,
     MatCardHeader,
     MatCardContent,
-    MatSlideToggleModule,
-    FormsModule,
     MatCardTitle,
     MatCardSubtitle,
-    MatCardActions,
-    MatCheckboxModule,
   ],
   templateUrl: './heat-map.html',
   styleUrl: './heat-map.scss',
@@ -52,47 +56,33 @@ export class HeatMap {
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialog = inject(MatDialog);
   private updateTimeout: ReturnType<typeof setTimeout> | null = null;
+  private currentTimeSlots: { label: string; startTime: number; endTime: number }[] = [];
 
   readonly store = inject(DashboardStore);
   updateHeatmapOptions = signal<EChartsOption>({});
-  showCriticalOnly = signal<boolean>(false);
+
   heatmapOption = signal<EChartsOption>({
     tooltip: {
       position: 'top',
-      formatter: (params: any) => {
-        if (!params.data) return '';
-        const dataValue = params.data.value || params.data;
-        const [xIndex, , count, statusType] = Array.isArray(dataValue)
-          ? dataValue
-          : [dataValue[0], dataValue[1], dataValue[2], dataValue[3]];
-        const timeSlots = [
-          '00:00-04:00',
-          '04:00-08:00',
-          '08:00-12:00',
-          '12:00-16:00',
-          '16:00-20:00',
-          '20:00-24:00',
-        ];
-        const statusLabels: Record<string, string> = {
-          completed: 'Completed',
-          pending: 'Pending',
-          anomaly: 'Critical',
-        };
-
-        const timeSlot = timeSlots[xIndex] || 'Unknown';
-        const statusTypeLabel = statusLabels[statusType] || 'Unknown';
+      formatter: (params: unknown) => {
+        const p = params as { data?: { value?: [number, number, number, number, string] } };
+        if (!p.data) return '';
+        const dataValue = p.data.value;
+        if (!dataValue) return '';
+        const [, severityIndex, count, , timeSlotLabel] = dataValue;
+        const severity = SEVERITY_LEVELS[severityIndex];
 
         return `
           <div class="p-2">
-            <div class="font-semibold text-sm mb-2 text-slate-200">
-              ${count} ${count === 1 ? 'Event' : 'Events'}
+            <div class="mb-2 text-sm font-semibold text-slate-200">
+              ${count} ${count === 1 ? 'Anomaly' : 'Anomalies'}
             </div>
-            <div class="text-xs text-slate-400 mb-1">
-              <span class="font-medium">Time:</span> ${timeSlot}
+            <div class="mb-1 text-xs text-slate-400">
+              <span class="font-medium">Time:</span> ${timeSlotLabel}
             </div>
-            <div class="text-xs mt-2 pt-2 border-t border-slate-700">
-              <span class="font-medium text-slate-400">Status:</span>
-              <span class="${getTooltipStatusColor(statusType)} font-semibold ml-1">${statusTypeLabel}</span>
+            <div class="pt-2 mt-2 text-xs border-t border-slate-700">
+              <span class="font-medium text-slate-400">Severity:</span>
+              <span class="ml-1 font-semibold text-red-400">Level ${severity}</span>
             </div>
           </div>
         `;
@@ -113,24 +103,28 @@ export class HeatMap {
     },
     xAxis: {
       type: 'category',
-      data: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+      data: [],
       splitArea: { show: true },
+      axisLabel: {
+        rotate: 45,
+        fontSize: 10,
+      },
     },
     yAxis: {
       type: 'category',
-      data: ['Pending', 'Completed', 'Critical'],
+      data: SEVERITY_LABELS,
       splitArea: { show: true },
       axisLabel: {
         show: true,
       },
     },
     visualMap: {
-      show: false, // Hide visualMap since we're using custom colors via itemStyle
+      show: false,
       min: 0,
       max: 10,
       calculable: false,
       inRange: {
-        color: ['#94a3b8'], // Dummy color, will be overridden by itemStyle
+        color: ['#94a3b8'],
       },
     },
     series: [
@@ -164,179 +158,156 @@ export class HeatMap {
     ],
   });
 
+  /** Generate 6 dynamic 4-hour time slots for the past 24 hours */
+
+  private generateTimeSlots(): { label: string; startTime: number; endTime: number }[] {
+    const now = new Date();
+    // Align to the next hour boundary to get flat numbers (e.g. 4:20 -> 5:00)
+    now.setHours(now.getHours() + 1);
+    now.setMinutes(0, 0, 0);
+    const endOfCurrentWindow = now.getTime();
+
+    const slots: { label: string; startTime: number; endTime: number }[] = [];
+    const slotDuration = 4 * 60 * 60 * 1000; // 4 hours in ms
+
+    // Generate 6 slots going back 24 hours from the aligned end time
+    for (let i = 5; i >= 0; i--) {
+      const endTime = endOfCurrentWindow - i * slotDuration;
+      const startTime = endTime - slotDuration;
+
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+
+      const formatTime = (d: Date) =>
+        `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+
+      slots.push({
+        label: `${formatTime(startDate)}-${formatTime(endDate)}`,
+        startTime,
+        endTime,
+      });
+    }
+
+    return slots;
+  }
+
+
   constructor() {
-    // Clean up timeout on component destroy
     this.destroyRef.onDestroy(() => {
       if (this.updateTimeout !== null) {
         clearTimeout(this.updateTimeout);
       }
     });
 
-    effect(() => {
-      const events = this.store.events();
+    effect(
+      () => {
+        const events = this.store.events();
 
-      // Debounce chart updates for performance
-      if (this.updateTimeout !== null) {
-        clearTimeout(this.updateTimeout);
-      }
+        if (this.updateTimeout !== null) {
+          clearTimeout(this.updateTimeout);
+        }
 
-      this.updateTimeout = globalThis.setTimeout(() => {
-        // Bucket key: "timeIndex-severityIndex" -> { count, eventTypes: Set }
-        const buckets = new Map<string, { count: number; eventTypes: Set<string> }>();
+        this.updateTimeout = globalThis.setTimeout(() => {
+          // Generate dynamic time slots for past 24 hours
+          this.currentTimeSlots = this.generateTimeSlots();
+          const timeSlotLabels = this.currentTimeSlots.map((s) => s.label);
 
-        const criticalOnly = this.showCriticalOnly();
+          // Only process anomaly events
+          const anomalies = events.filter((e) => e.type === 'anomaly');
 
-        events.forEach((e) => {
-          const status = getEventStatus(e);
-          if (criticalOnly && status !== 'anomaly') {
-            return;
-          }
+          const buckets = new Map<
+            string,
+            { count: number; severity: number; slotLabel: string }
+          >();
 
-          const hour = new Date(e.timestamp).getHours();
-          const timeIndex = Math.floor(hour / 4);
+          anomalies.forEach((e: LogEvent) => {
+            // Find which time slot this event belongs to
+            const slotIndex = this.currentTimeSlots.findIndex(
+              (slot) => e.timestamp >= slot.startTime && e.timestamp < slot.endTime
+            );
 
-          // Map status to Y-axis index: pending=0, completed=1, anomaly/critical=2
-          let statusIndex = 0; // Pending
-          if (status === 'completed') statusIndex = 1;
-          if (status === 'anomaly') statusIndex = 2;
+            if (slotIndex === -1) return; // Event outside 24h window
 
-          const key = `${timeIndex}-${statusIndex}`;
-          const bucket = buckets.get(key) || { count: 0, eventTypes: new Set<string>() };
-          bucket.count++;
-          bucket.eventTypes.add(e.type);
-          buckets.set(key, bucket);
-        });
+            // Get severity (default to 1 if not set)
+            const severity = typeof e.severity === 'number' ? e.severity : 1;
+            const severityIndex = Math.min(Math.max(severity - 1, 0), 4); // 0-4 index
 
-        // Determine status and color for each bucket based on events
-        // Use the first event in the bucket to determine status (or check all events)
-        // Priority: Anomaly (red) > Completed (green) > Pending (yellow)
-        const getStatusFromEvents = (
-          events: DashboardEvent[]
-        ): { status: string; color: string } => {
-          // Check all events in the bucket - if any is an anomaly, mark as anomaly
-          // If any is completed and none are anomalies, mark as completed
-          // Otherwise, mark as pending
-          let hasAnomaly = false;
-          let hasCompleted = false;
-
-          events.forEach((event) => {
-            const status = getEventStatus(event);
-            if (status === 'anomaly') hasAnomaly = true;
-            if (status === 'completed') hasCompleted = true;
+            const key = `${slotIndex}-${severityIndex}`;
+            const bucket = buckets.get(key) || {
+              count: 0,
+              severity,
+              slotLabel: this.currentTimeSlots[slotIndex].label,
+            };
+            bucket.count++;
+            buckets.set(key, bucket);
           });
 
-          if (hasAnomaly) {
-            return { status: 'anomaly', color: getStatusColorCircle('anomaly') };
-          }
-          if (hasCompleted) {
-            return { status: 'completed', color: getStatusColorCircle('completed') };
-          }
-          return { status: 'pending', color: getStatusColorCircle('pending') };
-        };
+          const heatmapData = Array.from(buckets.entries()).map(([key, bucket]) => {
+            const [x, y] = key.split('-').map(Number);
+            const severity = SEVERITY_LEVELS[y];
+            return {
+              value: [x, y, bucket.count, severity, bucket.slotLabel] as [
+                number,
+                number,
+                number,
+                number,
+                string,
+              ],
+              itemStyle: {
+                color: SEVERITY_COLORS[severity] || SEVERITY_COLORS[1],
+              },
+            };
+          });
 
-        // Create a map of events by bucket key for status determination
-        const eventsByBucket = new Map<string, DashboardEvent[]>();
-        events.forEach((e) => {
-          const status = getEventStatus(e);
-          if (criticalOnly && status !== 'anomaly') {
-            return;
-          }
-
-          const hour = new Date(e.timestamp).getHours();
-          const timeIndex = Math.floor(hour / 4);
-
-          // Map status to Y-axis index: pending=0, completed=1, anomaly/critical=2
-          let statusIndex = 0; // Pending
-          if (status === 'completed') statusIndex = 1;
-          if (status === 'anomaly') statusIndex = 2;
-
-          const key = `${timeIndex}-${statusIndex}`;
-          const bucketEvents = eventsByBucket.get(key) || [];
-          bucketEvents.push(e);
-          eventsByBucket.set(key, bucketEvents);
-        });
-
-        const heatmapData = Array.from(buckets.entries()).map(([key, bucket]) => {
-          const [x, y] = key.split('-').map(Number);
-          const bucketEvents = eventsByBucket.get(key) || [];
-          const { status, color } = getStatusFromEvents(bucketEvents);
-
-          return {
-            value: [x, y, bucket.count, status],
-            itemStyle: {
-              color: color,
-            },
-          };
-        });
-
-        this.updateHeatmapOptions.set({
-          series: [
-            {
-              data: heatmapData,
-            },
-          ],
-        });
-        this.updateTimeout = null;
-      }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
-    });
+          this.updateHeatmapOptions.set({
+            xAxis: { data: timeSlotLabels },
+            series: [
+              {
+                data: heatmapData,
+              },
+            ],
+          });
+          this.updateTimeout = null;
+        }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
+      }
+    );
   }
 
   onChartInit(echartsInstance: ECharts): void {
-    // Setup click handler when chart is initialized
-    echartsInstance.on('click', (params: any) => {
+    echartsInstance.on('click', (params: unknown) => {
       this.handleCellClick(params);
     });
   }
 
-  private handleCellClick(params: any): void {
-    if (!params.data) return;
+  private handleCellClick(params: unknown): void {
+    const p = params as { data?: { value?: [number, number, number, number, string] } };
+    if (!p.data?.value) return;
 
-    const dataValue = params.data.value || params.data;
-    const [xIndex, yIndex] = Array.isArray(dataValue) ? dataValue : [dataValue[0], dataValue[1]];
+    const [xIndex, yIndex] = p.data.value;
+    const severity = SEVERITY_LEVELS[yIndex];
 
-    const timeSlots = [
-      '00:00-04:00',
-      '04:00-08:00',
-      '08:00-12:00',
-      '12:00-16:00',
-      '16:00-20:00',
-      '20:00-24:00',
-    ];
-    const statuses: Array<'pending' | 'completed' | 'anomaly'> = ['pending', 'completed', 'anomaly'];
-    const statusLabels = ['Pending', 'Completed', 'Critical'];
+    // Use the dynamic time slots
+    const slot = this.currentTimeSlots[xIndex];
+    if (!slot) return;
 
-    const timeSlot = timeSlots[xIndex] || 'Unknown';
-    const status = statuses[yIndex] || 'pending';
-    const statusLabel = statusLabels[yIndex] || 'Pending';
-
-    // Filter events for this time slot and status
-    const [startHour, endHour] = timeSlot.split('-').map((time: string) => {
-      const [hour] = time.split(':').map(Number);
-      return hour;
+    // Filter anomalies by time slot and severity
+    const filteredEvents = this.store.events().filter((event: LogEvent) => {
+      if (event.type !== 'anomaly') return false;
+      const matchesTimeSlot =
+        event.timestamp >= slot.startTime && event.timestamp < slot.endTime;
+      const eventSeverity = typeof event.severity === 'number' ? event.severity : 1;
+      const matchesSeverity = eventSeverity === severity;
+      return matchesTimeSlot && matchesSeverity;
     });
 
-    const filteredEvents = this.store.events().filter((event) => {
-      const eventHour = new Date(event.timestamp).getHours();
-      const matchesTimeSlot = eventHour >= startHour && eventHour < (endHour || 24);
-      const eventStatus = getEventStatus(event);
-      const matchesStatus = eventStatus === status;
-      return matchesTimeSlot && matchesStatus;
-    });
-
-    // Open dialog with filtered events
-    // Map status to severity for dialog compatibility (Critical maps to CRITICAL)
-    const severityMap: Record<string, EventSeverity> = {
-      'Pending': 'INFO',
-      'Completed': 'INFO',
-      'Critical': 'CRITICAL',
-    };
+    if (filteredEvents.length === 0) return;
 
     this.dialog.open<HeatmapDetailsDialog, HeatmapDetailsDialogData>(HeatmapDetailsDialog, {
       width: '800px',
       maxWidth: '90vw',
       data: {
-        timeSlot,
-        severity: severityMap[statusLabel] || 'INFO',
+        timeSlot: slot.label,
+        eventType: 'anomaly',
         events: filteredEvents,
       },
     });

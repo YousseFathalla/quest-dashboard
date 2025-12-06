@@ -1,34 +1,34 @@
-import { DashboardEvent } from '@core/models/dashboard.types';
+
 
 export type EventStatus = 'completed' | 'pending' | 'anomaly';
 export type EventSeverity = 'CRITICAL' | 'WARNING' | 'INFO';
-export function getEventStatus(event: DashboardEvent): EventStatus {
+// export function getEventStatus(event: DashboardEvent): EventStatus {
 
-  if (event.severity === 'CRITICAL') return 'anomaly';
+//   if (event.severity === 'CRITICAL') return 'anomaly';
 
-  const typeLower = event.type.toLowerCase();
-  const messageLower = event.message.toLowerCase();
-  const completionIndicators = [
-    'complete',
-    'completed',
-    'finished',
-    'success',
-    'approved',
-    'resolved',
-    'closed',
-    'finalized',
-  ];
+//   const typeLower = event.type.toLowerCase();
+//   const messageLower = event.message.toLowerCase();
+//   const completionIndicators = [
+//     'complete',
+//     'completed',
+//     'finished',
+//     'success',
+//     'approved',
+//     'resolved',
+//     'closed',
+//     'finalized',
+//   ];
 
-  if (
-    event.severity === 'INFO' &&
-    (completionIndicators.some((indicator) => typeLower.includes(indicator)) ||
-      completionIndicators.some((indicator) => messageLower.includes(indicator)))
-  ) {
-    return 'completed';
-  }
+//   if (
+//     event.severity === 'INFO' &&
+//     (completionIndicators.some((indicator) => typeLower.includes(indicator)) ||
+//       completionIndicators.some((indicator) => messageLower.includes(indicator)))
+//   ) {
+//     return 'completed';
+//   }
 
-  return 'pending';
-}
+//   return 'pending';
+// }
 
 export function getStatusColorCircle(status: EventStatus): string {
   switch (status) {

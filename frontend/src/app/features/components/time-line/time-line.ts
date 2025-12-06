@@ -1,23 +1,25 @@
 import {
   Component,
-  effect,
   inject,
   signal,
   computed,
   ChangeDetectionStrategy,
-  DestroyRef,
   PLATFORM_ID,
+  DestroyRef,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { MatCard, MatCardHeader, MatCardContent, MatCardTitle, MatCardSubtitle } from '@angular/material/card';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardContent,
+  MatCardTitle,
+  MatCardSubtitle,
+} from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import type { EChartsOption } from 'echarts';
-import { DashboardStore } from '@core/store/dashboard.store';
-import { DashboardEvent } from '@core/models/dashboard.types';
-import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
-import { formatEventTypeWithAcronyms, formatMessage } from '@core/utils/format.utils';
-import { getEventStatus, getSeverityColor, getStatusColorCircle, getStatusColorForTooltip, getTooltipStatusColor } from '@core/utils/event-status.utils';
+import { DashboardStore } from 'app/store/dashboard.store';
+import { ChartDataPoint, DashboardFilter, LogEvent } from 'app/models/dashboard.types';
 
 @Component({
   selector: 'app-time-line',
@@ -35,239 +37,181 @@ import { getEventStatus, getSeverityColor, getStatusColorCircle, getStatusColorF
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimeLine {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
-  private updateTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly destroyRef = inject(DestroyRef);
 
+  // ✅ 1. Inject Store
   readonly store = inject(DashboardStore);
-  readonly updateOptions = signal<EChartsOption>({});
-  readonly selectedFilter = signal<string>('ALL');
+
+  // ✅ 2. Define Filters (Matches Store Types)
+  readonly filters = signal<DashboardFilter[]>(['all', 'completed', 'pending', 'anomaly']);
+
+  // ✅ 3. Responsive Logic
   private readonly windowWidth = signal<number>(0);
-
-  // Responsive sizes based on screen width
   private readonly isMobile = computed(() => this.windowWidth() <= 640);
+  private readonly pointSize = computed(() => (this.isMobile() ? 10 : 14));
 
-  private readonly responsiveSize = computed(() => {
-    return this.isMobile() ? 12 : 18;
-  });
-
-  onFilterChange(value: string): void {
-    this.selectedFilter.set(value || 'ALL');
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.windowWidth.set(window.innerWidth);
+      const resizeObserver = new ResizeObserver((entries) => {
+        this.windowWidth.set(entries[0].contentRect.width);
+      });
+      resizeObserver.observe(document.body);
+      this.destroyRef.onDestroy(() => resizeObserver.disconnect());
+    }
   }
 
-  chartOption = computed<EChartsOption>(() => {
+  // ✅ 4. Interaction (Delegates to Store)
+  onFilterChange(filter: DashboardFilter): void {
+    const next = this.store.filter() === filter ? 'all' : filter;
+    this.store.setFilter(next);
+  }
+
+  // ✅ 5. Data Transformation (Computed = Efficient)
+  private readonly chartData = computed<ChartDataPoint[]>(() => {
+    const events = this.store.visibleEvents();
+
+    // Group by timestamp to handle collisions (Visual Jitter)
+    const groups = new Map<number, LogEvent[]>();
+    events.forEach((e) => {
+      if (!groups.has(e.timestamp)) groups.set(e.timestamp, []);
+      groups.get(e.timestamp)!.push(e);
+    });
+
+    // Flatten to Chart Points
+    return Array.from(groups.entries()).flatMap(([ts, group]) => {
+      return group.map((e, index) => {
+        // Jitter Y-axis slightly so points don't overlap perfectly
+        const jitterY = 0.5 + (index - (group.length - 1) / 2) * 0.15;
+
+        return {
+          name: `Event #${e.id}`,
+          value: [e.timestamp, jitterY],
+          type: e.type,
+          severity: e.severity || 1,
+          timestamp: e.timestamp,
+          itemStyle: {
+            color: this.getStatusColor(e.type),
+            borderColor: this.getSeverityColor(e.severity),
+            borderWidth: this.isHighSeverity(e.severity) ? 2 : 0,
+          },
+        };
+      });
+    });
+  });
+
+  // ✅ 6. Chart Options (Reactive)
+  readonly chartOption = computed<EChartsOption>(() => {
     const mobile = this.isMobile();
+    const size = this.pointSize();
 
     return {
-      tooltip: {
-        trigger: 'item',
-        formatter: this.getTooltipFormatter.bind(this),
-        backgroundColor: 'var(--mat-sys-surface-container-highest)',
-        borderColor: 'var(--mat-sys-outline-variant)',
-        borderWidth: 1,
-        textStyle: {
-          fontSize: mobile ? 11 : 12,
-        },
-      },
       backgroundColor: 'transparent',
       grid: {
-        left: mobile ? '8%' : '5%',
-        right: mobile ? '8%' : '5%',
-        bottom: mobile ? '15%' : '10%',
-        top: mobile ? '8%' : '10%'
+        left: mobile ? 40 : 60,
+        right: mobile ? 10 : 20,
+        top: 20,
+        bottom: 40,
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: (params: any) => this.getTooltipHtml(params.data),
+        backgroundColor: 'var(--mat-sys-surface-container-highest, #fff)',
+        borderColor: 'var(--mat-sys-outline-variant, #ccc)',
+        borderWidth: 1,
+        padding: 12,
+        extraCssText: 'border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);',
       },
       xAxis: {
         type: 'time',
+        boundaryGap: ['2%', '2%'],
+        axisLine: { show: false },
+        axisTick: { show: false },
         splitLine: { show: false },
         axisLabel: {
-          color: 'oklch(70.7% 0.022 261.325)',
-          fontSize: this.responsiveSize(),
-          rotate: mobile ? 45 : 0,
-          margin: mobile ? 8 : 10,
+          color: '#9ca3af',
+          fontSize: mobile ? 10 : 12,
+          formatter: '{HH}:{mm}:{ss}',
         },
-        axisLine: {
-          lineStyle: {
-            color: 'oklch(70.7% 0.022 261.325)',
-            width: 1,
-          }
-        },
-        boundaryGap: mobile ? ['8%', '8%'] : ['5%', '5%'],
       },
-    yAxis: {
-      type: 'value',
-      show: false,
-      min: 0,
-      max: 1,
-    },
+      yAxis: {
+        type: 'value',
+        show: false, // Y-axis is purely for visual jitter
+        min: 0,
+        max: 1,
+      },
+      dataZoom: [
+        { type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: true },
+        {
+          type: 'slider',
+          show: !mobile,
+          height: 16,
+          bottom: 10,
+          borderColor: 'transparent',
+          backgroundColor: '#f1f5f9',
+          fillerColor: 'rgba(100, 116, 139, 0.2)',
+        },
+      ],
       series: [
         {
           type: 'scatter',
-          symbolSize: this.responsiveSize(),
-          itemStyle: {
-            shadowBlur: 2,
-            shadowColor: 'rgba(0, 0, 0, 0.1)',
-            borderColor: 'var(--mat-sys-outline-variant)',
-            borderWidth: 1,
-          },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 2,
-              shadowColor: 'rgba(0, 0, 0, 0.1)',
-            },
-          },
-          data: [],
+          symbol: 'circle',
+          symbolSize: size,
+          data: this.chartData(),
+          animationDelay: (idx) => idx * 2, // Smooth entry
         },
       ],
     };
   });
 
-  constructor() {
-    // Initialize window width and listen for resize
-    if (isPlatformBrowser(this.platformId)) {
-      this.windowWidth.set(window.innerWidth);
+  // --- Helpers (Inlined for Stability) ---
 
-      const handleResize = () => {
-        this.windowWidth.set(window.innerWidth);
-      };
-
-      window.addEventListener('resize', handleResize);
-      this.destroyRef.onDestroy(() => {
-        window.removeEventListener('resize', handleResize);
-      });
+  private getStatusColor(status: string): string {
+    switch (status) {
+      case 'completed':
+        return '#22c55e'; // Green
+      case 'pending':
+        return '#eab308'; // Yellow
+      case 'anomaly':
+        return '#ef4444'; // Red
+      default:
+        return '#94a3b8'; // Gray
     }
-
-    this.destroyRef.onDestroy(() => {
-      if (this.updateTimeout !== null) {
-        clearTimeout(this.updateTimeout);
-      }
-    });
-
-    effect(() => {
-      const events = this.store.events();
-
-      if (this.updateTimeout !== null) {
-        clearTimeout(this.updateTimeout);
-      }
-
-      this.updateTimeout = globalThis.setTimeout(() => {
-        const filteredEvents = this.filterEvents(events, this.selectedFilter());
-        const eventGroups = this.groupEventsByTimestamp(filteredEvents);
-        const dataPoints = this.createDataPoints(eventGroups);
-
-        this.updateOptions.set({
-          series: [
-            {
-              data: dataPoints,
-            },
-          ],
-        });
-        this.updateTimeout = null;
-      }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
-    });
   }
 
-  private filterEvents(events: DashboardEvent[], filter: string): DashboardEvent[] {
-    if (filter === 'ALL') return events;
-
-
-    return events.filter((e) => {
-      const status = getEventStatus(e);
-      if (filter === 'COMPLETED') return status === 'completed';
-      if (filter === 'ANOMALY') return status === 'anomaly';
-      if (filter === 'PENDING') return status === 'pending';
-      return false;
-    });
+  private isHighSeverity(severity?: number | string): boolean {
+    if (typeof severity === 'number') return severity > 3;
+    return severity === 'high';
   }
 
-  private groupEventsByTimestamp(events: DashboardEvent[]): Map<number, DashboardEvent[]> {
-    const eventGroups = new Map<number, DashboardEvent[]>();
-
-    events.forEach((e) => {
-      const timestamp = new Date(e.timestamp).getTime();
-      const group = eventGroups.get(timestamp);
-      if (group) {
-        group.push(e);
-      } else {
-        eventGroups.set(timestamp, [e]);
-      }
-    });
-
-    return eventGroups;
+  private getSeverityColor(severity?: number | string): string {
+    return this.isHighSeverity(severity) ? '#b91c1c' : 'transparent';
   }
 
-  private createDataPoints(eventGroups: Map<number, DashboardEvent[]>): any[] {
-    return Array.from(eventGroups.entries()).flatMap(([timestamp, groupEvents]) => {
-      return groupEvents.map((e, index) => {
-        const status = getEventStatus(e);
-        const jitterMs = (index - (groupEvents.length - 1) / 2) * 30000;
-        const jitteredTimestamp = timestamp + jitterMs;
-
-        return {
-          name: e.message,
-          value: [jitteredTimestamp, 0.5],
-          status: status,
-          eventType: e.type,
-          severity: e.severity,
-          timestamp: e.timestamp,
-          itemStyle: {
-            color: getStatusColorCircle(status),
-          },
-        };
-      });
-    });
-  }
-
-
-
-  private getTooltipFormatter(params: any): string {
-    if (!params.data) return '';
-    const timestamp = params.data.timestamp || params.data.value[0];
-    const message = params.data.name || '';
-    const eventType = params.data.eventType || 'Event';
-    const severity = params.data.severity || 'UNKNOWN';
-    const status = params.data.status || 'pending';
-
-    const date = new Date(timestamp);
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-    });
-    const dateStr = date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-
-    const formattedEventType = formatEventTypeWithAcronyms(eventType);
-    const formattedMessage = formatMessage(message);
-
-    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+  private getTooltipHtml(data: ChartDataPoint): string {
+    if (!data) return '';
+    const date = new Date(data.timestamp);
+    const severityClass = this.isHighSeverity(data.severity) ? 'text-warn' : '';
 
     return `
-      <div class="timeline-tooltip ${getStatusColorForTooltip(status)}">
-        <div class="tooltip-header">
-          ${formattedEventType}
-        </div>
-        ${formattedMessage ? `<div class="tooltip-message">${formattedMessage}</div>` : ''}
-        <div class="tooltip-row">
-          <span class="label">Status:</span>
-          <span class="${getTooltipStatusColor(status)}">${statusLabel}</span>
+      <div class="timeline-tooltip">
+        <div class="tooltip-header" style="color: ${data.itemStyle.color}">
+          ${data.type.toUpperCase()}
         </div>
         <div class="tooltip-row">
-          <span class="label">Time:</span> <span class="value">${timeStr}</span>
+          <span>Time:</span>
+          <strong>${date.toLocaleTimeString()}</strong>
         </div>
         <div class="tooltip-row">
-          <span class="label">Date:</span> <span class="value">${dateStr}</span>
+          <span>Date:</span>
+          <span>${date.toLocaleDateString()}</span>
         </div>
-        <div class="tooltip-footer">
-          <span class="label">Severity:</span>
-          <span class="${getSeverityColor(severity)}">${severity}</span>
+        <div class="tooltip-row">
+          <span>Severity:</span>
+          <span class="${severityClass}">${data.severity}</span>
         </div>
       </div>
     `;
   }
-
 }
-

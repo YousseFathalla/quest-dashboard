@@ -1,8 +1,20 @@
-FROM node:20-slim
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+# Use a lightweight Node image
+FROM node:20-alpine
 
+# Set working directory
+WORKDIR /app
+
+# Copy package files first (better caching)
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
 COPY . .
+
+# Expose the port
 EXPOSE 3000
-CMD ["node", "server.js"]
+
+# Start the server
+CMD ["node", "src/server.js"]

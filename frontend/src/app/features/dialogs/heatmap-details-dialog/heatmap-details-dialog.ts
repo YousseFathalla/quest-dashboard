@@ -1,28 +1,20 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatCard, MatCardContent } from '@angular/material/card';
-import { MatChip } from '@angular/material/chips';
-import { MatButton } from '@angular/material/button';
-import { DashboardEvent, EventSeverity } from '@core/models/dashboard.types';
-import { formatEventTypeWithAcronyms } from '@core/utils/format.utils';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { LogEvent, EventType, Severity } from '@models/dashboard.types';
+import { getStatusEventLogDot, getStatusEventLogChip } from '@shared/utilities/event-status.utils';
 
 export interface HeatmapDetailsDialogData {
   timeSlot: string;
-  severity: EventSeverity;
-  events: DashboardEvent[];
+  eventType: EventType;
+  events: LogEvent[];
 }
 
 @Component({
   selector: 'app-heatmap-details-dialog',
-  imports: [
-    MatDialogModule,
-    MatCard,
-    MatCardContent,
-    MatChip,
-    MatButton,
-    DatePipe,
-  ],
+  imports: [MatDialogModule, MatButtonModule, DatePipe, MatIconModule],
   templateUrl: './heatmap-details-dialog.html',
   styleUrl: './heatmap-details-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,36 +22,51 @@ export interface HeatmapDetailsDialogData {
 export class HeatmapDetailsDialog {
   readonly dialogRef = inject(MatDialogRef<HeatmapDetailsDialog>);
   readonly data = inject<HeatmapDetailsDialogData>(MAT_DIALOG_DATA);
-  readonly formatEventType = formatEventTypeWithAcronyms;
+  readonly getStatusDot = getStatusEventLogDot;
+  readonly getStatusChip = getStatusEventLogChip;
 
-  getSeverityColor(severity: EventSeverity): 'warn' | 'primary' | 'accent' {
-    switch (severity) {
-      case 'CRITICAL':
-        return 'warn';
-      case 'WARNING':
-        return 'accent';
-      case 'INFO':
-        return 'primary';
-      default:
-        return 'primary';
-    }
+  getEventTypeLabel(type: EventType): string {
+    return type === 'anomaly' ? 'Critical' : type;
   }
 
-  getSeverityDotColor(severity: EventSeverity): string {
-    switch (severity) {
-      case 'CRITICAL':
-        return 'var(--color-error-dot)';
-      case 'WARNING':
-        return 'var(--color-warning-dot)';
-      case 'INFO':
-        return 'var(--color-info-dot)';
-      default:
-        return 'var(--mat-sys-outline-variant)';
+  getSeverityIconClass(severity: Severity | undefined): string {
+    if (severity === undefined) return 'warning mat-text-primary'; // Default/Warning
+
+    let val: number;
+    if (typeof severity === 'number') {
+      val = severity;
+    } else {
+      val = severity === 'high' ? 5 : 1;
     }
+
+    if (val >= 4) return 'mat-text-error';
+    if (val === 3) return 'orange mat-text-primary';
+    return 'warning mat-text-primary';
   }
 
-  close(): void {
-    this.dialogRef.close();
+  getSeverityColor(severity: Severity | undefined): string {
+    if (severity === undefined) return 'warning mat-text-on-primary mat-bg-primary'; // Default
+
+    let val: number;
+    if (typeof severity === 'number') {
+      val = severity;
+    } else {
+      val = severity === 'high' ? 5 : 1;
+    }
+
+    if (val >= 4) return 'mat-text-on-error mat-bg-error';
+    if (val === 3) return 'orange mat-text-on-primary mat-bg-primary';
+    return 'warning mat-text-on-primary mat-bg-primary';
+  }
+
+  getSeverityLabel(severity: Severity | undefined): string {
+    let val: number;
+    if (severity === undefined) val = 0;
+    else if (typeof severity === 'number') {
+      val = severity;
+    } else {
+      val = severity === 'high' ? 5 : 1;
+    }
+    return `Severity ${val}`;
   }
 }
-

@@ -1,5 +1,5 @@
-export const environment = {
+export const env = {
   production: true,
-  wsUrl: 'ws://localhost:4000',
-};
+  baseUrl: 'http://localhost:3000', // in real project we place this url;
+}
 

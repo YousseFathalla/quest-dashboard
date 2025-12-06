@@ -1,7 +1,7 @@
 <mat-card>
   <mat-card-header class="flex-wrap gap-4 justify-between items-center">
     <mat-card-title>Anomaly Heatmap</mat-card-title>
-    <mat-card-subtitle>Intensity by Hour & Severity</mat-card-subtitle>
+    <mat-card-subtitle>Anomalies by Hour & Severity</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <div
@@ -12,12 +12,4 @@
       (chartInit)="onChartInit($event)"
     ></div>
   </mat-card-content>
-  <mat-card-actions class="justify-center mb-2">
-    <mat-checkbox
-      [ngModel]="showCriticalOnly()"
-      (ngModelChange)="showCriticalOnly.set($event)"
-      aria-label="Show critical only"
-      >Critical Only
-    </mat-checkbox>
-  </mat-card-actions>
 </mat-card>

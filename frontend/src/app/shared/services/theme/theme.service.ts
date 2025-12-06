@@ -4,11 +4,11 @@ import { LoggerService } from '@shared/services/logger/logger.service';
 
 
 export type ThemeVariant = 'light' | 'dark';
-export type ThemePalette = 'orange' | 'azure-blue' | 'magenta-violet' | 'cyan';
-export type Theme = `${ThemePalette}-${ThemeVariant}`;
+export type ThemePalette = 'orange' | 'azure' | 'magenta' | 'cyan';
+
 
 export interface ThemeOption {
-  id: Theme;
+  id: ThemePalette;
   name: string;
   palette: ThemePalette;
   variant: ThemeVariant;
@@ -24,7 +24,15 @@ export class ThemeService {
 
   readonly themes: ThemeOption[] = [
     {
-      id: "orange-light",
+      id: "azure",
+      name: "Azure",
+      palette: "azure",
+      variant: "light",
+      primaryColor: "#0e5db9",
+      secondaryColor: "#0e5db9",
+    },
+    {
+      id: "orange",
       name: "Orange",
       palette: "orange",
       variant: "light",
@@ -32,32 +40,24 @@ export class ThemeService {
       secondaryColor: "#95480e",
     },
     {
-      id: "azure-blue-light",
-      name: "Azure & Blue",
-      palette: "azure-blue",
-      variant: "light",
-      primaryColor: "#0e5db9",
-      secondaryColor: "#0e5db9",
-    },
-    {
-      id: "magenta-violet-dark",
-      name: "Magenta & Violet",
-      palette: "magenta-violet",
-      variant: "dark",
-      primaryColor: "#feabf2",
-      secondaryColor: "#feabf2",
-    },
-    {
-      id: "cyan-dark",
+      id: "cyan",
       name: "Cyan",
       palette: "cyan",
       variant: "dark",
       primaryColor: "#1edddc",
       secondaryColor: "#1edddc",
     },
+    {
+      id: "magenta",
+      name: "Magenta",
+      palette: "magenta",
+      variant: "dark",
+      primaryColor: "#feabf2",
+      secondaryColor: "#feabf2",
+    },
   ];
 
-  readonly currentTheme = signal<Theme>("azure-blue-light");
+  readonly currentTheme = signal<ThemePalette>("azure");
 
   readonly currentThemeOption = computed(() => {
     return this.themes.find((t) => t.id === this.currentTheme()) || this.themes[1];
@@ -90,14 +90,14 @@ export class ThemeService {
       const saved = localStorage.getItem(ThemeService.THEME_STORAGE_KEY);
 
       if (saved && this.themes.some((t) => t.id === saved)) {
-        this.currentTheme.set(saved as Theme);
+        this.currentTheme.set(saved as ThemePalette);
       }
     } catch (error: unknown) {
       this.logger.warn("Could not read theme from localStorage", error);
     }
   }
 
-  setTheme(theme: Theme): void {
+  setTheme(theme: ThemePalette): void {
     if (this.themes.some((t) => t.id === theme)) {
       this.currentTheme.set(theme);
     }

@@ -14,8 +14,11 @@ import {
   MatButtonToggleChange,
 } from '@angular/material/button-toggle';
 import type { EChartsOption } from 'echarts';
-import { DashboardStore } from '@core/store/dashboard.store';
+import { DashboardStore } from 'app/store/dashboard.store';
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
+import { LogEvent } from '@models/dashboard.types';
+
+type TimeRange = '6h' | '12h' | '24h';
 
 @Component({
   selector: 'app-volume-chart',
@@ -35,20 +38,28 @@ export class VolumeChart {
   private readonly destroyRef = inject(DestroyRef);
   private updateTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  readonly store = inject(DashboardStore);
-  readonly timeRanges = DASHBOARD_CONSTANTS.TIME_RANGES;
-  updateVolumeOption = signal<EChartsOption>({});
+  protected readonly store = inject(DashboardStore);
+  protected readonly timeRanges: TimeRange[] = ['6h', '12h', '24h'];
+  protected readonly selectedTimeRange = signal<TimeRange>('24h');
+  protected readonly updateVolumeOption = signal<EChartsOption>({});
 
-  volumeOption = signal<EChartsOption>({
+
+  protected readonly volumeOption = signal<EChartsOption>({
     tooltip: {
       trigger: 'axis',
-      formatter: (params: any) => {
-        if (!params || !params.length) return '';
-        const axisValue = params[0].axisValue;
+      formatter: (params: unknown) => {
+        const p = params as Array<{
+          axisValue?: string;
+          value?: number;
+          seriesName?: string;
+          color?: string;
+        }>;
+        if (!p || !p.length) return '';
+        const axisValue = p[0].axisValue;
         let content = `<div style="padding: 8px;">`;
         content += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #e2e8f0;">${axisValue}</div>`;
 
-        params.forEach((param: any) => {
+        p.forEach((param) => {
           const value = param.value || 0;
           const seriesName = param.seriesName || '';
           const color = param.color || '#94a3b8';
@@ -99,52 +110,86 @@ export class VolumeChart {
     ],
   });
 
+
   constructor() {
-    // Clean up timeout on component destroy
     this.destroyRef.onDestroy(() => {
       if (this.updateTimeout !== null) {
         clearTimeout(this.updateTimeout);
       }
     });
 
-    effect(() => {
-      const events = this.store.filteredEvents();
+    effect(
+      () => {
+        const events = this.store.events();
+        const timeRange = this.selectedTimeRange();
 
-      // Debounce chart updates for performance
-      if (this.updateTimeout !== null) {
-        clearTimeout(this.updateTimeout);
+        if (this.updateTimeout !== null) {
+          clearTimeout(this.updateTimeout);
+        }
+
+        this.updateTimeout = globalThis.setTimeout(() => {
+          const filteredEvents = this.filterEventsByTimeRange(events, timeRange);
+          const volumeMap = new Map<string, { total: number; critical: number }>();
+
+          filteredEvents.forEach((e: LogEvent) => {
+            const hourLabel = new Date(e.timestamp).getHours() + ':00';
+            const current = volumeMap.get(hourLabel) || { total: 0, critical: 0 };
+
+            current.total++;
+            if (e.type === 'anomaly') current.critical++;
+
+            volumeMap.set(hourLabel, current);
+          });
+
+          // Generate hour labels based on selected time range
+          const hoursToShow = this.getHoursForRange(timeRange);
+
+          this.updateVolumeOption.set({
+            xAxis: { data: hoursToShow },
+            series: [
+              { data: hoursToShow.map((h) => volumeMap.get(h)?.total || 0) },
+              { data: hoursToShow.map((h) => volumeMap.get(h)?.critical || 0) },
+            ],
+          });
+          this.updateTimeout = null;
+        }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
       }
+    );
+  }
 
-      this.updateTimeout = window.setTimeout(() => {
-        const volumeMap = new Map<string, { total: number; critical: number }>();
+  private filterEventsByTimeRange(events: LogEvent[], range: TimeRange): LogEvent[] {
+    const hoursMap: Record<TimeRange, number> = {
+      '6h': 6,
+      '12h': 12,
+      '24h': 24,
+    };
+    const hours = hoursMap[range];
+    const cutoffTimestamp = Date.now() - hours * 3600000;
+    return events.filter((e) => e.timestamp >= cutoffTimestamp);
+  }
 
-        events.forEach((e) => {
-          const hourLabel = new Date(e.timestamp).getHours() + ':00';
-          const current = volumeMap.get(hourLabel) || { total: 0, critical: 0 };
+  private getHoursForRange(range: TimeRange): string[] {
+    const hoursMap: Record<TimeRange, number> = {
+      '6h': 6,
+      '12h': 12,
+      '24h': 24,
+    };
+    const numHours = hoursMap[range];
+    const currentHour = new Date().getHours();
+    const hours: string[] = [];
 
-          current.total++;
-          if (e.severity === 'CRITICAL') current.critical++;
+    // Generate hours going back from current hour
+    for (let i = numHours - 1; i >= 0; i--) {
+      const hour = (currentHour - i + 24) % 24;
+      hours.push(`${hour}:00`);
+    }
 
-          volumeMap.set(hourLabel, current);
-        });
-
-        const sortedHours = Array.from(volumeMap.keys()).sort();
-
-        this.updateVolumeOption.set({
-          xAxis: { data: sortedHours },
-          series: [
-            { data: sortedHours.map((h) => volumeMap.get(h)?.total || 0) },
-            { data: sortedHours.map((h) => volumeMap.get(h)?.critical || 0) },
-          ],
-        });
-        this.updateTimeout = null;
-      }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
-    });
+    return hours;
   }
 
   onTimeRangeChange(event: MatButtonToggleChange): void {
     if (event.value) {
-      this.store.updateTimeRange(event.value as '6h' | '12h' | '24h');
+      this.selectedTimeRange.set(event.value as TimeRange);
     }
   }
 }

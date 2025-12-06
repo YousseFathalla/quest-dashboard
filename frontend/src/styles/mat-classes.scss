@@ -1,0 +1,39 @@
+@use '@angular/material' as mat;
+
+.warning {
+  @include mat.theme(
+    (
+      color: mat.$yellow-palette,
+    )
+  );
+}
+.success {
+  @include mat.theme(
+    (
+      color: mat.$spring-green-palette,
+    )
+  );
+}
+.error {
+  @include mat.theme(
+    (
+      color: mat.$red-palette,
+    )
+  );
+}
+
+.orange {
+  @include mat.theme(
+    (
+      color: mat.$orange-palette,
+    )
+  );
+}
+.info {
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+    )
+  );
+}
+

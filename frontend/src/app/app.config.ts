@@ -1,32 +1,34 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts/core';
-import { BarChart, ScatterChart, HeatmapChart, LineChart } from 'echarts/charts';
-import { GridComponent, LegendComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { BarChart, HeatmapChart, LineChart, ScatterChart } from 'echarts/charts';
+import { DataZoomComponent, GridComponent, LegendComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
 import { routes } from './app.routes';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 // Configure ECharts modules
 echarts.use([
   BarChart,
-  ScatterChart,
+  LineChart,
   HeatmapChart,
+  ScatterChart,
   GridComponent,
   TooltipComponent,
   VisualMapComponent,
-  CanvasRenderer,
-  LineChart,
   LegendComponent,
+  DataZoomComponent,
+  CanvasRenderer,
 ]);
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideNoopAnimations(), // MatDialog works with noop animations
+    provideHttpClient(withInterceptors([errorInterceptor])),
     provideEchartsCore({ echarts }),
   ]
 };

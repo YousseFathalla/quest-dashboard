@@ -1,5 +1,5 @@
-export const environment = {
+export const env = {
   production: false,
-  wsUrl: 'ws://localhost:4000',
+  baseUrl: 'http://localhost:3000',
 };
 

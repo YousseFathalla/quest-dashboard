@@ -1,48 +1,8 @@
 <app-header />
 
-<section class="@container">
-  <div class="px-[6cqw] py-[2cqw]">
-    <div class="flex justify-between items-center flex-wrap gap-4 mb-1">
-      <h2 class="mat-font-headline-sm text-primary">Real-time Legal Workflow Monitoring</h2>
-
-      <div class="px-3 py-1.5 mat-corner-md mat-bg-primary-container">
-        @if (store.isLoading()) {
-        <div class="flex items-center gap-2">
-          <mat-icon>hourglass_empty</mat-icon>
-          CONNECTING...
-        </div>
-        } @else {
-        <div
-          class="flex items-center gap-2"
-          [attr.aria-label]="store.isConnected() ? 'Live stream active' : 'Connection offline'"
-          [attr.aria-pressed]="store.isConnected()"
-        >
-          <mat-icon
-            [class]="store.isConnected() ? 'success' : 'mat-text-disabled'"
-            class="mat-text-primary"
-          >
-            circle
-          </mat-icon>
-          {{ store.isConnected() ? 'LIVE STREAM' : 'OFFLINE' }}
-        </div>
-        }
-      </div>
-    </div>
-    <!-- todo: add real error message later -->
-    @if (store.error()) {
-    <mat-card class="max-w-fit w-full mat-bg-error-container">
-      <mat-card-header>
-        <div mat-card-avatar class="me-1">
-          <mat-icon class="mat-text-error">warning</mat-icon>
-        </div>
-        <mat-card-title>Connection Error</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <!-- will add real errors later  -->
-        <div>{{ store.error() || 'Test error message' }}</div>
-      </mat-card-content>
-    </mat-card>
-    }
+<section class="@container h-[calc(100dvh-64px)] overflow-auto custom-scrollbar">
+  <div class="lg:px-[10cqw] px-[6cqw] py-[2cqw]">
+    <app-workflow-header />
 
     <mat-divider class="my-6!" />
 
@@ -55,7 +15,7 @@
     <app-event-log />
     <mat-divider class="my-6!" />
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <app-heat-map />
       <app-volume-chart />
     </div>

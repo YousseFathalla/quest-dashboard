@@ -1,14 +1,11 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, TitleCasePipe } from '@angular/common';
 import { MatCard, MatCardHeader, MatCardContent } from '@angular/material/card';
-import { MatChip } from '@angular/material/chips';
-import { DashboardStore } from '@core/store/dashboard.store';
-import { formatEventTypeWithAcronyms } from '@core/utils/format.utils';
+import { DashboardStore } from 'app/store/dashboard.store';
 import {
-  getEventStatus,
   getStatusEventLogDot,
   getStatusEventLogChip,
-} from '@core/utils/event-status.utils';
+} from '@shared/utilities/event-status.utils';
 
 @Component({
   selector: 'app-event-log',
@@ -19,8 +16,6 @@ import {
 })
 export class EventLog {
   readonly store = inject(DashboardStore);
-  readonly formatEventTypeWithAcronyms = formatEventTypeWithAcronyms;
-  readonly getEventStatus = getEventStatus;
   readonly getStatusEventLogDot = getStatusEventLogDot;
   readonly getStatusEventLogChip = getStatusEventLogChip;
 }

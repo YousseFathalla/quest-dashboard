@@ -5,26 +5,26 @@
     </mat-card-header>
     <mat-card-content>
       <div>
-        @for (event of store.recentEvents(); track event.id) {
-          @let status = getEventStatus(event);
-          <div class="event-log-item">
-            <span
-              [class]="getStatusEventLogDot(status)"
-              class="event-log-dot"
-            ></span>
+        @for (event of store.visibleEvents().slice(0, 6); track event.id) {
+        <div class="event-log">
+          <div class="flex flex-row items-center">
+            <span [class]="getStatusEventLogDot(event.type)" class="event-log-dot"></span>
             <span class="mat-font-body-sm mat-text-on-surface-variant event-log-timestamp">
               {{ event.timestamp | date : 'HH:mm:ss' }}
             </span>
-            <span class="mat-font-body-md event-log-type">
-              {{ formatEventTypeWithAcronyms(event.type) }}
+            @if(event.severity){
+            <span [class]="event.severity < '3' ? 'warning mat-text-primary' : 'mat-text-error'">
+             - Severity {{ event.severity }}
             </span>
-            <div
-              class="rounded-md px-2 py-1 min-w-22 text-center mat-font-body-sm mat-border-subtle"
-              [class]="getStatusEventLogChip(status)"
-            >
-              {{ status | titlecase }}
-            </div>
+            }
           </div>
+          <div
+            class="px-2 py-1 text-center rounded-md min-w-22 mat-font-body-sm mat-border-subtle"
+            [class]="getStatusEventLogChip(event.type)"
+          >
+            {{ event.type | titlecase }}
+          </div>
+        </div>
         }
       </div>
     </mat-card-content>
