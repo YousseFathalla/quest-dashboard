@@ -3,11 +3,11 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY /frontend/package.json /package-lock.json ./
 
 RUN npm install --legacy-peer-deps
 
-COPY . .
+COPY ./frontend .
 
 RUN npm run build
 
@@ -19,4 +19,4 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-CMD ["/bin/sh", "-c", "sed -i \"s|http://backend:3000|${BACKEND_URL}|g\" /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]
