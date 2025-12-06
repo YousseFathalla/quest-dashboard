@@ -23,6 +23,9 @@ import type { EChartsOption } from 'echarts';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
 import { LogEvent } from '@models/dashboard.types';
+import { SkeletonLoader } from "@shared/components/skeleton-loader/skeleton-loader";
+
+
 
 type TimeRange = '6h' | '12h' | '24h';
 
@@ -35,9 +38,9 @@ type TimeRange = '6h' | '12h' | '24h';
     MatCardContent,
     MatButtonToggleGroup,
     MatButtonToggle,
+    SkeletonLoader,
   ],
   templateUrl: './volume-chart.html',
-  styleUrl: './volume-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VolumeChart {
@@ -60,7 +63,7 @@ export class VolumeChart {
           seriesName?: string;
           color?: string;
         }>;
-        if (!p || !p.length) return '';
+        if (!p?.length) return '';
         const axisValue = p[0].axisValue;
         let content = `<div style="padding: 8px;">`;
         content += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #e2e8f0;">${axisValue}</div>`;

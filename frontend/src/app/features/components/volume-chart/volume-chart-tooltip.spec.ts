@@ -11,7 +11,7 @@ function formatVolumeTooltip(
     color?: string;
   }>
 ): string {
-  if (!params || !params.length) return '';
+  if (!params?.length) return '';
 
   const axisValue = params[0].axisValue;
   let content = `<div style="padding: 8px;">`;

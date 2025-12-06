@@ -1,26 +1,33 @@
-<mat-card class="card-flex">
-  <mat-card-header>
-    <div class="card-header-flex">
-      <div class="mat-font-title-md">Workflow Volume</div>
-      <mat-button-toggle-group
-        [value]="selectedTimeRange()"
-        (change)="onTimeRangeChange($event)"
-        aria-label="Select time range"
-      >
-        @for (range of timeRanges; track range) {
-          <mat-button-toggle [value]="range" [attr.aria-label]="'Set time range to ' + range">
-            {{ range }}
-          </mat-button-toggle>
-        }
-      </mat-button-toggle-group>
-    </div>
-  </mat-card-header>
-  <mat-card-content class="card-content-flex">
-    <div
-      echarts
-      [options]="volumeOption()"
-      [merge]="updateVolumeOption()"
-      class="chart-container-flex"
-    ></div>
-  </mat-card-content>
-</mat-card>
+<section class="h-full relative min-h-[300px]">
+  @if (store.loading()) {
+  <app-skeleton-loader />
+  }
+  <article class="h-full">
+    <mat-card class="flex flex-col h-full">
+      <mat-card-header>
+        <div class="flex justify-between items-center w-full">
+          <div class="mat-font-title-md">Workflow Volume</div>
+          <mat-button-toggle-group
+            [value]="selectedTimeRange()"
+            (change)="onTimeRangeChange($event)"
+            aria-label="Select time range"
+          >
+            @for (range of timeRanges; track range) {
+            <mat-button-toggle [value]="range" [attr.aria-label]="'Set time range to ' + range">
+              {{ range }}
+            </mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </div>
+      </mat-card-header>
+      <mat-card-content class="flex-1">
+        <div
+          echarts
+          [options]="volumeOption()"
+          [merge]="updateVolumeOption()"
+          class="flex-1 min-h-[300px] w-full h-full"
+        ></div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+</section>

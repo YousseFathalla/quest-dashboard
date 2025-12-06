@@ -35,7 +35,7 @@ export const errorInterceptor: HttpInterceptorFn = (
       } else if (error.status >= 500) {
         // Server error - show user-friendly message
         connectionService.showError(
-          'Server error occurred. Please try again later.'
+          'Server error occurred.   Retrying again...'
         );
       }
 

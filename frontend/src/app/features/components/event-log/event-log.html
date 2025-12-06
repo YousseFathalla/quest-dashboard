@@ -1,20 +1,27 @@
-<div>
-  <mat-card>
+<section class="relative h-full min-h-[300px]">
+  @if(store.loading()) {
+  <app-skeleton-loader />
+  }
+  <mat-card class="h-full">
     <mat-card-header>
       <div class="mat-font-title-sm">Recent Event Log</div>
     </mat-card-header>
     <mat-card-content>
-      <div>
+      <ul class="p-0 m-0 list-none">
         @for (event of store.visibleEvents().slice(0, 6); track event.id) {
-        <div class="event-log">
+        <li class="flex justify-between items-center p-3 border-b border-outline-variant">
           <div class="flex flex-row items-center">
-            <span [class]="getStatusEventLogDot(event.type)" class="event-log-dot"></span>
-            <span class="mat-font-body-sm mat-text-on-surface-variant event-log-timestamp">
+            <span
+              [class]="getStatusEventLogDot(event.type)"
+              class="mr-2 w-2 h-2 rounded-full shrink-0"
+              aria-hidden="true"
+            ></span>
+            <span class="mr-1.5 font-mono mat-font-body-sm mat-text-on-surface-variant">
               {{ event.timestamp | date : 'HH:mm:ss' }}
             </span>
             @if(event.severity){
             <span [class]="event.severity < '3' ? 'warning mat-text-primary' : 'mat-text-error'">
-             - Severity {{ event.severity }}
+              - Severity {{ event.severity }}
             </span>
             }
           </div>
@@ -24,9 +31,9 @@
           >
             {{ event.type | titlecase }}
           </div>
-        </div>
+        </li>
         }
-      </div>
+      </ul>
     </mat-card-content>
   </mat-card>
-</div>
+</section>

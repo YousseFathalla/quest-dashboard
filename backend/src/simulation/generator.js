@@ -22,7 +22,13 @@ export function updateMetrics() {
 export function seedInitialData() {
   const now = Date.now();
 
-  for (let i = 0; i < 200; i++) {
+  // Calculate the number of events to match the approximate live generation rate
+  // Live: ~1 event every 15s = 4/min = 240/hour
+  // 24 hours * 240 events = 5760 events. 
+  // We'll use 500 as requested.
+  const INITIAL_COUNT = 200; 
+
+  for (let i = 0; i < INITIAL_COUNT; i++) {
     const ts = now - Math.random() * 24 * 60 * 60 * 1000;
     const type = randomType();
 
@@ -38,23 +44,29 @@ export function seedInitialData() {
     if (type === "anomaly") store.anomalies.push(event);
   }
 
+  // SORTING IS CRITICAL:
+  // Since we generated random timestamps in the loop, the array is NOT Chronological.
+  // This causes issues when we slice(-200) later (we get random events, not the latest).
+  store.events.sort((a, b) => a.timestamp - b.timestamp);
+  store.anomalies.sort((a, b) => a.timestamp - b.timestamp);
+
   // Calculate initial metrics
   updateMetrics();
 }
 
 /**
  * Returns a random event type based on weighted probabilities.
- * - 60% 'completed'
+ * - 70% 'completed'
  * - 20% 'pending'
- * - 20% 'anomaly'
+ * - 10% 'anomaly'
  *
  * @returns {string} The event type.
  */
 export function randomType() {
   const r = Math.random();
-  if (r < 0.6) return "completed"; // 60%
-  if (r < 0.8) return "pending"; // 20%
-  return "anomaly"; // 20%
+  if (r < 0.7) return "completed"; // 70%
+  if (r < 0.9) return "pending"; // 20%
+  return "anomaly"; // 10%
 }
 
 /**

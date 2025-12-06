@@ -21,7 +21,6 @@ export interface HeatmapDetailsDialogData {
   selector: 'app-heatmap-details-dialog',
   imports: [MatDialogModule, MatButtonModule, DatePipe, MatIconModule],
   templateUrl: './heatmap-details-dialog.html',
-  styleUrl: './heatmap-details-dialog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HeatmapDetailsDialog {

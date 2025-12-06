@@ -27,7 +27,6 @@ import { VolumeChart } from '@features/components/volume-chart/volume-chart';
     VolumeChart,
   ],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {

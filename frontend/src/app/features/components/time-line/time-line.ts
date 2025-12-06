@@ -25,6 +25,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import type { EChartsOption } from 'echarts';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { ChartDataPoint, DashboardFilter, LogEvent } from 'app/models/dashboard.types';
+import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
 @Component({
   selector: 'app-time-line',
@@ -36,9 +37,9 @@ import { ChartDataPoint, DashboardFilter, LogEvent } from 'app/models/dashboard.
     MatChipsModule,
     MatCardTitle,
     MatCardSubtitle,
+    SkeletonLoader,
   ],
   templateUrl: './time-line.html',
-  styleUrl: './time-line.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimeLine {

@@ -9,7 +9,7 @@ import { connectSSE } from '@core/tools/sse-stream';
   providedIn: 'root',
 })
 export class DashboardService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   getStats(): Observable<OverviewStats> {
     return this.http.get<OverviewStats>(`${env.baseUrl}/stats/overview`);
@@ -17,6 +17,12 @@ export class DashboardService {
 
   getTimelineHistory(): Observable<LogEvent[]> {
     return this.http.get<LogEvent[]>(`${env.baseUrl}/stats/timeline`);
+  }
+
+  getSnapshot(): Observable<{ overview: OverviewStats; events: LogEvent[] }> {
+    return this.http.get<{ overview: OverviewStats; events: LogEvent[] }>(
+      `${env.baseUrl}/stats/snapshot`
+    );
   }
 
   connectToStream(options: {

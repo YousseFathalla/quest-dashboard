@@ -9,6 +9,44 @@ import { store } from "../data/store.js";
 export const router = Router();
 
 /**
+ * GET /stats/snapshot
+ * Retrieves all dashboard data (overview, timeline, volume) in a single atomic request.
+ * This prevents partial loading states where one widget loads and another fails.
+ *
+ * @name GET/stats/snapshot
+ * @function
+ * @param {import("express").Request} req - The Express request object.
+ * @param {import("express").Response} res - The Express response object.
+ */
+router.get("/snapshot", (req, res) => {
+  const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+  
+  // 1. Overview
+  const overview = store.overview;
+
+  // 2. Timeline (Last 24h)
+  const events = store.events.filter(e => e.timestamp >= twentyFourHoursAgo);
+
+  // 3. Volume
+  const hours = new Array(24).fill().map((_, i) => ({
+    hour: i,
+    completed: 0,
+    pending: 0,
+    anomaly: 0,
+  }));
+  store.events.forEach((e) => {
+    const h = new Date(e.timestamp).getHours();
+    hours[h][e.type]++;
+  });
+
+  res.json({
+    overview,
+    events,
+    volume: hours
+  });
+});
+
+/**
  * GET /stats/overview
  * Retrieves the current overview statistics.
  *
@@ -33,25 +71,16 @@ router.get("/overview", (req, res) => {
  * @param {import("express").Response} res - The Express response object.
  */
 router.get("/timeline", (req, res) => {
-  // Refresh timestamps to be relative to current time
-  // This ensures the frontend always sees events within the last 24 hours
-  const now = Date.now();
-  const events = store.events.slice(-200).map((event, index) => {
-    // Spread events across the last 24 hours based on their original relative position
-    const originalTimestamp = event.timestamp;
-    const oldestEventTime = Math.min(...store.events.map(e => e.timestamp));
-    const newestEventTime = Math.max(...store.events.map(e => e.timestamp));
-    const timeRange = newestEventTime - oldestEventTime || 1;
-
-    // Calculate relative position (0 to 1) and map to last 24 hours
-    const relativePosition = (originalTimestamp - oldestEventTime) / timeRange;
-    const newTimestamp = now - (24 * 60 * 60 * 1000) + (relativePosition * 24 * 60 * 60 * 1000);
-
-    return {
-      ...event,
-      timestamp: Math.floor(newTimestamp)
-    };
-  });
+  // Return events from the last 24 hours.
+  // We DO NOT shift timestamps anymore because it creates artifacts when mixed with live data.
+  // We DO NOT limit to 200 items because it creates sparsity issues (dots vs dense live lines).
+  
+  const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+  
+  // Filter for last 24h
+  // Since store is sorted (thanks to generator fix), we could optimize this, but filter is fine.
+  const events = store.events.filter(e => e.timestamp >= twentyFourHoursAgo);
+  
   res.json(events);
 });
 

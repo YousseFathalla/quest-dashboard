@@ -1,43 +1,65 @@
-<div class="flex flex-wrap gap-4 justify-between items-end">
-  <h2 class="mat-font-headline-sm text-primary">Real-time Legal Workflow Monitoring</h2>
+<section class="flex flex-wrap gap-4 justify-between items-end">
+  <div class="overflow-hidden relative">
+    @if (store.loading()) {
+    <app-skeleton-loader />
+    }
+    <h2 class="mat-font-headline-sm text-primary" [class.invisible]="store.loading()">
+      Real-time Legal Workflow Monitoring
+    </h2>
+  </div>
 
   <div class="flex flex-wrap gap-2 items-center">
-
-    <button matButton="tonal" (click)="store.refresh()">
-      <mat-icon>refresh</mat-icon>
-      Global Refresh
-    </button>
-    <button matButton="filled" class="error" (click)="store.simulateError()">
-      <mat-icon>error_outline</mat-icon>
-      Simulate Error
-    </button>
-
-    <button matButton="filled" (click)="store.togglePause()">
-      <mat-icon>{{ store.isPaused() ? 'play_arrow' : 'pause' }}</mat-icon>
-      {{ store.isPaused() ? 'Resume Live Updates' : 'Pause Live Updates' }}
-    </button>
-
-    <div class="px-4 py-2 mat-corner-lg mat-font-label-lg mat-shadow-1" [class]="store.connectionState() === 'connected'
-          ? 'success mat-bg-primary-container mat-text-on-primary-container'
-          : 'mat-bg-disabled'">
-      <div class="flex gap-2 items-center" [attr.aria-label]="store.connectionState()">
-        @switch (store.connectionState()) {
-        @case ('connecting') {
-        <mat-icon>hourglass_empty</mat-icon>
-        CONNECTING...
-        }
-        @case ('connected') {
-        <mat-icon class="success bg-on mat-text-on-primary-container">circle</mat-icon>
-        LIVE STREAM
-        }
-        @case ('disconnected') {
-        <mat-icon class="mat-text-disabled">circle</mat-icon>
-        OFFLINE
-        }
-        }
+    <div class="overflow-hidden relative">
+      @if(store.loading()){
+      <app-skeleton-loader />
+      }
+      <button matButton="tonal" (click)="store.refresh()">
+        <mat-icon>refresh</mat-icon>
+        Global Refresh
+      </button>
+    </div>
+    <div class="overflow-hidden relative">
+      @if(store.loading()){
+      <app-skeleton-loader />
+      }
+      <button matButton="filled" class="error" (click)="store.simulateError()">
+        <mat-icon>error_outline</mat-icon>
+        Simulate Error
+      </button>
+    </div>
+    <div class="overflow-hidden relative">
+      @if(store.loading()){
+      <app-skeleton-loader />
+      }
+      <button matButton="filled" (click)="store.togglePause()">
+        <mat-icon>{{ store.isPaused() ? 'play_arrow' : 'pause' }}</mat-icon>
+        {{ store.isPaused() ? 'Resume Live Updates' : 'Pause Live Updates' }}
+      </button>
+    </div>
+    <div class="overflow-hidden relative">
+      @if(store.loading()){
+      <app-skeleton-loader />
+      }
+      <div
+        class="px-3 py-2 mb-1 mat-corner-xl mat-font-label-lg"
+        [class]="
+          store.connectionState() === 'connected'
+            ? 'success mat-bg-primary-container mat-text-on-primary-container'
+            : 'mat-bg-disabled'
+        "
+      >
+        <div class="flex gap-2 items-center" [attr.aria-label]="store.connectionState()">
+          @switch (store.connectionState()) { @case ('connecting') {
+          <mat-icon aria-hidden="true">hourglass_empty</mat-icon>
+          CONNECTING... } @case ('connected') {
+          <mat-icon class="success bg-on mat-text-on-primary-container" aria-hidden="true"
+            >circle</mat-icon
+          >
+          LIVE STREAM } @case ('disconnected') {
+          <mat-icon class="mat-text-disabled" aria-hidden="true">circle</mat-icon>
+          OFFLINE } }
+        </div>
       </div>
-
-
     </div>
   </div>
-</div>
+</section>

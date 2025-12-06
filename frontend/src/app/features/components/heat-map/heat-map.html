@@ -1,15 +1,36 @@
-<mat-card>
-  <mat-card-header class="flex-wrap gap-4 justify-between items-center">
-    <mat-card-title>Anomaly Heatmap</mat-card-title>
-    <mat-card-subtitle>Anomalies by Hour & Severity</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <div
-      echarts
-      #chart
-      [options]="heatmapOption()"
-      [merge]="updateHeatmapOptions()"
-      (chartInit)="onChartInit($event)"
-    ></div>
-  </mat-card-content>
-</mat-card>
+<section class="h-full relative min-h-[300px]">
+  @if (store.loading()) {
+  <app-skeleton-loader />
+  }
+
+  @if (store.error()) {
+  <div
+    class="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 rounded-lg bg-surface-container-high/90 backdrop-blur-sm"
+  >
+    <mat-icon class="w-12 h-12 mb-2 text-4xl text-error">error_outline</mat-icon>
+    <p class="mb-4 text-center mat-body-large text-on-surface">
+      {{ store.error() }}
+    </p>
+    <button mat-stroked-button color="warn" (click)="store.refresh()">
+      Retry Connection
+    </button>
+  </div>
+  }
+  <article class="h-full">
+    <mat-card class="h-full">
+      <mat-card-header class="flex-wrap gap-4 justify-between items-center">
+        <mat-card-title>Anomaly Heatmap</mat-card-title>
+        <mat-card-subtitle>Anomalies by Hour & Severity</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div
+          echarts
+          #chart
+          [options]="heatmapOption()"
+          [merge]="updateHeatmapOptions()"
+          (chartInit)="onChartInit($event)"
+        ></div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+</section>

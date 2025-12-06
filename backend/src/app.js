@@ -1,8 +1,8 @@
+
 /**
  * @fileoverview Main Express application entry point.
  * Configures middleware, routes, and initializes the simulation engine.
  */
-
 import express from "express";
 import cors from "cors";
 import statsRoutes from "./routes/stats.js";

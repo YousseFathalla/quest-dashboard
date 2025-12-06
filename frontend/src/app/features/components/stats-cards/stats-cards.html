@@ -1,36 +1,64 @@
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Total Workflows Today</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="mat-font-display-md text-primary">{{ store.stats().totalWorkflowsToday }}</div>
-    </mat-card-content>
-  </mat-card>
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Active Anomalies</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="mat-font-display-md text-error">{{ store.stats().activeAnomalies }}</div>
-    </mat-card-content>
-  </mat-card>
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>SLA Compliance</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="mat-font-display-md success mat-text-primary">
-        {{ store.stats().slaCompliance | number : '1.2-2' }}%
-      </div>
-    </mat-card-content>
-  </mat-card>
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Avg Cycle Time</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="mat-font-display-md text-tertiary">{{ store.stats().cycleTime | duration }}</div>
-    </mat-card-content>
-  </mat-card>
-</div>
+<section
+  class="grid grid-cols-1 gap-4 h-full md:grid-cols-2 lg:grid-cols-4"
+  aria-label="Dashboard Statistics"
+>
+  <article class="relative h-full">
+    @if (store.loading()) {
+    <app-skeleton-loader />
+    }
+    <mat-card class="h-full">
+      <mat-card-header>
+        <mat-card-title>Total Workflows Today</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mat-font-display-md text-primary">{{ store.stats().totalWorkflowsToday }}</div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+
+  <article class="relative h-full">
+    @if (store.loading()) {
+    <app-skeleton-loader />
+    }
+    <mat-card class="h-full">
+      <mat-card-header>
+        <mat-card-title>Active Anomalies</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mat-font-display-md text-error">{{ store.stats().activeAnomalies }}</div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+
+  <article class="relative h-full">
+    @if (store.loading()) {
+    <app-skeleton-loader />
+    }
+    <mat-card class="h-full">
+      <mat-card-header>
+        <mat-card-title>SLA Compliance</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mat-font-display-md success mat-text-primary">
+          {{ store.stats().slaCompliance | number : '1.2-2' }}%
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+
+  <article class="relative h-full">
+    @if (store.loading()) {
+    <app-skeleton-loader />
+    }
+    <mat-card class="h-full z-1">
+      <mat-card-header>
+        <mat-card-title>Avg Cycle Time</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="mat-font-display-md text-secondary">
+          {{ store.stats().cycleTime | duration }}
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </article>
+</section>

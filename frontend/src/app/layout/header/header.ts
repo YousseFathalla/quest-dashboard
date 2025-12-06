@@ -12,7 +12,6 @@ import { MatToolbar } from '@angular/material/toolbar';
   selector: 'app-header',
   imports: [ThemeSelector, MatToolbar],
   templateUrl: './header.html',
-  styleUrl: './header.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: '@container sticky top-0 z-10',

@@ -31,18 +31,8 @@ router.get("/", (req, res) => {
   // Register client with StreamManager
   const removeClient = streamManager.addClient(res);
 
-  // 😈 Chaos: Check every 10 seconds. 5% chance to kill connection.
-  const chaosInterval = setInterval(() => {
-    if (Math.random() < 0.05) {
-      console.log(`💥 Chaos Monkey cut the stream`);
-      res.end(); // Close the connection
-      clearInterval(chaosInterval); // Stop checking for this client
-    }
-  }, 10000);
-
   // Clean up on client disconnect
   req.on("close", () => {
-    clearInterval(chaosInterval);
     removeClient();
   });
 });

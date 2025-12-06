@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { arbLogEvents, arbEventType } from 'app/testing/generators';
+import { arbLogEvents } from 'app/testing/generators';
 import { LogEvent, EventType } from '@models/dashboard.types';
 
 /**

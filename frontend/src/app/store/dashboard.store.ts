@@ -13,8 +13,8 @@ import {
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { computed, inject } from '@angular/core';
-import { tap, switchMap, take, retry, catchError } from 'rxjs/operators';
-import { EMPTY, forkJoin, of, pipe, timer } from 'rxjs';
+import { tap, switchMap, take, retry, catchError, delay } from 'rxjs/operators';
+import { EMPTY, of, pipe, timer } from 'rxjs';
 import { DashboardFilter, ConnectionState } from '@models/dashboard.types';
 import { calculateStateFromEvent } from './dashboard-helper';
 import { ConnectionService } from '@core/services/connection.service';
@@ -32,9 +32,7 @@ export const DashboardStore = signalStore(
 
   // 1. COMPUTED (Selectors)
   withComputed(({ events, filter }) => ({
-    /**
-     * Computed signal returning the list of events filtered by the current filter setting.
-     */
+    // Computed signal returning the list of events filtered by the current filter setting.
     visibleEvents: computed(() => {
       const currentFilter = filter();
       const allEvents = events();
@@ -42,13 +40,8 @@ export const DashboardStore = signalStore(
         ? allEvents
         : allEvents.filter((e) => e.type === currentFilter);
     }),
-    /**
-     * Computed signal returning the total count of anomalies in the current event list.
-     */
-    anomalyCount: computed(() =>
-      events().filter((e) => e.type === 'anomaly').length
-    ),
-
+    // Computed signal returning the total count of anomalies in the current event list.
+    anomalyCount: computed(() => events().filter((e) => e.type === 'anomaly').length),
   })),
 
   // 2. METHODS (Actions)
@@ -57,11 +50,11 @@ export const DashboardStore = signalStore(
     const connectionService = inject(ConnectionService);
     const anomalyNotifications = inject(AnomalyNotificationService);
 
-      /**
-       * Updates the connection state and triggers appropriate notifications.
-       *
-       * @param {ConnectionState} state - The new connection state.
-       */
+    /**
+     * Updates the connection state and triggers appropriate notifications.
+     *
+     * @param {ConnectionState} state - The new connection state.
+     */
     const setConnectionState = (state: ConnectionState) => {
       const current = store.connectionState();
       if (state === current) return;
@@ -81,29 +74,27 @@ export const DashboardStore = signalStore(
       pipe(
         tap(() => patchState(store, { loading: true, error: null })),
         switchMap(() =>
-          forkJoin({
-            stats: dashboardService.getStats(),
-            history: dashboardService.getTimelineHistory(),
-          }).pipe(
-            tap(({ stats, history }) => {
+          dashboardService.getSnapshot().pipe(
+            delay(2000), // Keep the user-requested delay
+            tap(({ overview, events }) => {
               patchState(store, {
-                stats,
-                events: history,
+                stats: overview,
+                events: events,
                 loading: false,
               });
             }),
             retry({
-              count: 10,
-              delay: () => {
-                patchState(store, { loading: false });
-                return timer(1000).pipe(take(1));
+              count: 3, // Reduced retry count for faster feedback
+              delay: (error, retryCount) => {
+                // Only keep loading state true, don't flicker false
+                return timer(1000 * retryCount).pipe(take(1));
               },
             }),
             catchError((err) => {
               console.error('Failed to load snapshot', err);
               patchState(store, {
                 loading: false,
-                error: 'Failed to load dashboard data. Please check your connection.'
+                error: 'Failed to load dashboard data. Please check your connection.',
               });
               return of(null);
             })
@@ -122,27 +113,29 @@ export const DashboardStore = signalStore(
 
           patchState(store, { connectionState: 'connecting' });
 
-          return dashboardService.connectToStream({
-            onOpen: () => {
-              setConnectionState('connected');
-              loadSnapshot();
-            },
-            onError: () => setConnectionState('disconnected'),
-          }).pipe(
-            tap((newEvent) => {
-              patchState(store, (state) => calculateStateFromEvent(state, newEvent));
-              if (!store.isPaused() && newEvent.type === 'anomaly') {
-                anomalyNotifications.notify(newEvent);
-              }
-            }),
-            retry({
-              delay: (err) => {
-                console.error('Stream disconnected, retrying in 5s...', err);
-                setConnectionState('disconnected');
-                return timer(5000).pipe(take(1));
+          return dashboardService
+            .connectToStream({
+              onOpen: () => {
+                setConnectionState('connected');
+                loadSnapshot();
               },
+              onError: () => setConnectionState('disconnected'),
             })
-          );
+            .pipe(
+              tap((newEvent) => {
+                patchState(store, (state) => calculateStateFromEvent(state, newEvent));
+                if (!store.isPaused() && newEvent.type === 'anomaly') {
+                  anomalyNotifications.notify(newEvent);
+                }
+              }),
+              retry({
+                delay: (err) => {
+                  console.error('Stream disconnected, retrying in 5s...', err);
+                  setConnectionState('disconnected');
+                  return timer(5000).pipe(take(1));
+                },
+              })
+            );
         })
       )
     );
@@ -185,31 +178,21 @@ export const DashboardStore = signalStore(
         connectLiveStream(isActive);
       },
 
-      simulateError,
-
       refresh() {
         patchState(store, { loading: true });
-        loadSnapshot();
         connectLiveStream(store.isStreamActive());
       },
-
-
       // Load initial snapshot - does NOT affect connected state
       // Only the stream determines if we're "LIVE"
+      simulateError,
       loadSnapshot,
-
       connectLiveStream,
     };
   }),
 
   // 3. HOOKS
   withHooks({
-    /**
-     * Lifecycle hook called when the store is initialized.
-     * Loads the initial snapshot and connects to the live stream.
-     */
     onInit(store) {
-      store.loadSnapshot();
       store.connectLiveStream(store.isStreamActive());
     },
   })

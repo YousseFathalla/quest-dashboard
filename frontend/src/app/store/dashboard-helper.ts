@@ -18,6 +18,7 @@ export function calculateStateFromEvent(
   newEvent: LogEvent
 ): Partial<DashboardState> {
   if (state.isPaused) return {};
+  // Limit to 300 as requested
   const updatedEvents = [newEvent, ...state.events].slice(0, 200);
 
   // Optimistic UI Update for Stats
@@ -28,12 +29,14 @@ export function calculateStateFromEvent(
   }
 
   // Recalculate SLA dynamically based on the rolling window of 200 events
-  const recentAnomalies = updatedEvents.filter((e) => e.type === 'anomaly').length;
-  const recentNonAnomalies = updatedEvents.length - recentAnomalies;
+  // Use slice(0, 200) to match backend logic and keep it responsive
+  const recentWindow = updatedEvents.slice(0, 200);
+  const recentAnomalies = recentWindow.filter((e) => e.type === 'anomaly').length;
+  const recentNonAnomalies = recentWindow.length - recentAnomalies;
   updatedStats.slaCompliance =
-    updatedEvents.length === 0
+    recentWindow.length === 0
       ? 100
-      : Math.round((recentNonAnomalies / updatedEvents.length) * 100);
+      : Math.round((recentNonAnomalies / recentWindow.length) * 100);
 
   // Recalculate Avg Cycle Time based on completed events in the window
   const completedEvents = updatedEvents.filter(
