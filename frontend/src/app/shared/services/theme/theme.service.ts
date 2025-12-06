@@ -1,11 +1,14 @@
+/**
+ * @fileoverview Service for managing the application theme and palette.
+ * Supports light/dark modes and multiple color palettes. Persists selection to localStorage.
+ */
+
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { LoggerService } from '@shared/services/logger/logger.service';
 
-
 export type ThemeVariant = 'light' | 'dark';
 export type ThemePalette = 'orange' | 'azure' | 'magenta' | 'cyan';
-
 
 export interface ThemeOption {
   id: ThemePalette;
@@ -22,6 +25,9 @@ export class ThemeService {
   private readonly document = inject(DOCUMENT);
   private readonly logger = inject(LoggerService);
 
+  /**
+   * List of available theme options.
+   */
   readonly themes: ThemeOption[] = [
     {
       id: "azure",
@@ -57,18 +63,22 @@ export class ThemeService {
     },
   ];
 
+  /** Signal holding the current theme ID. */
   readonly currentTheme = signal<ThemePalette>("azure");
 
+  /** Computed property representing the currently selected theme option object. */
   readonly currentThemeOption = computed(() => {
     return this.themes.find((t) => t.id === this.currentTheme()) || this.themes[1];
   });
 
+  /** Computed boolean indicating if the current theme is a dark variant. */
   readonly isDark = computed(() => this.currentThemeOption().variant === "dark");
 
   constructor() {
     // Initialize theme from localStorage before setting up the effect
     this.initFromStorage();
 
+    // Effect to update the DOM when the theme changes
     effect(() => {
       const theme = this.currentThemeOption();
       const el = this.document.documentElement;
@@ -85,6 +95,9 @@ export class ThemeService {
     });
   }
 
+  /**
+   * Initializes the theme from localStorage if available.
+   */
   initFromStorage(): void {
     try {
       const saved = localStorage.getItem(ThemeService.THEME_STORAGE_KEY);
@@ -97,6 +110,11 @@ export class ThemeService {
     }
   }
 
+  /**
+   * Sets the current theme.
+   *
+   * @param {ThemePalette} theme - The ID of the theme to set.
+   */
   setTheme(theme: ThemePalette): void {
     if (this.themes.some((t) => t.id === theme)) {
       this.currentTheme.set(theme);

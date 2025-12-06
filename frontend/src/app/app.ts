@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main Application Component.
+ * Orchestrates the layout of dashboard widgets including Stats Cards, Timeline, Heatmap, Volume Chart, and Event Log.
+ */
+
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { Header } from '@layout/header/header';
@@ -26,5 +31,6 @@ import { VolumeChart } from '@features/components/volume-chart/volume-chart';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  /** The global dashboard store instance. */
   readonly store = inject(DashboardStore);
 }

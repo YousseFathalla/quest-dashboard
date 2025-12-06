@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Heatmap visualization component for anomaly detection.
+ * Displays a heatmap of anomalies aggregated by time slots and severity levels.
+ * Allows users to click on cells to view detailed anomaly lists.
+ */
+
 import {
   Component,
   effect,
@@ -158,8 +164,11 @@ export class HeatMap {
     ],
   });
 
-  /** Generate 6 dynamic 4-hour time slots for the past 24 hours */
-
+  /**
+   * Generates 6 dynamic 4-hour time slots covering the past 24 hours.
+   *
+   * @returns {Array<{ label: string; startTime: number; endTime: number }>} Array of time slot objects.
+   */
   private generateTimeSlots(): { label: string; startTime: number; endTime: number }[] {
     const now = new Date();
     // Align to the next hour boundary to get flat numbers (e.g. 4:20 -> 5:00)
@@ -273,12 +282,23 @@ export class HeatMap {
     );
   }
 
+  /**
+   * Initializes chart event listeners.
+   *
+   * @param {ECharts} echartsInstance - The ECharts instance.
+   */
   onChartInit(echartsInstance: ECharts): void {
     echartsInstance.on('click', (params: unknown) => {
       this.handleCellClick(params);
     });
   }
 
+  /**
+   * Handles clicks on heatmap cells.
+   * Opens a dialog showing details of the anomalies in the selected time slot and severity.
+   *
+   * @param {unknown} params - The ECharts event parameters.
+   */
   private handleCellClick(params: unknown): void {
     const p = params as { data?: { value?: [number, number, number, number, string] } };
     if (!p.data?.value) return;

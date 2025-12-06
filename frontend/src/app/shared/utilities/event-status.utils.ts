@@ -1,35 +1,17 @@
-
+/**
+ * @fileoverview Utilities for mapping event statuses and severities to UI colors and styles.
+ * Used for styling chips, dots, and tooltips based on event data.
+ */
 
 export type EventStatus = 'completed' | 'pending' | 'anomaly';
 export type EventSeverity = 'CRITICAL' | 'WARNING' | 'INFO';
-// export function getEventStatus(event: DashboardEvent): EventStatus {
 
-//   if (event.severity === 'CRITICAL') return 'anomaly';
-
-//   const typeLower = event.type.toLowerCase();
-//   const messageLower = event.message.toLowerCase();
-//   const completionIndicators = [
-//     'complete',
-//     'completed',
-//     'finished',
-//     'success',
-//     'approved',
-//     'resolved',
-//     'closed',
-//     'finalized',
-//   ];
-
-//   if (
-//     event.severity === 'INFO' &&
-//     (completionIndicators.some((indicator) => typeLower.includes(indicator)) ||
-//       completionIndicators.some((indicator) => messageLower.includes(indicator)))
-//   ) {
-//     return 'completed';
-//   }
-
-//   return 'pending';
-// }
-
+/**
+ * Returns the hex color code for a status circle.
+ *
+ * @param {EventStatus} status - The status of the event.
+ * @returns {string} Hex color string.
+ */
 export function getStatusColorCircle(status: EventStatus): string {
   switch (status) {
     case 'completed':
@@ -42,6 +24,13 @@ export function getStatusColorCircle(status: EventStatus): string {
       return '#94a3b8';
   }
 }
+
+/**
+ * Returns the CSS classes for tooltip background based on status.
+ *
+ * @param {EventStatus} status - The status of the event.
+ * @returns {string} CSS class string.
+ */
 export function getStatusColorForTooltip(status: EventStatus): string {
   switch (status) {
     case 'completed':
@@ -54,6 +43,13 @@ export function getStatusColorForTooltip(status: EventStatus): string {
       return '';
   }
 }
+
+/**
+ * Returns the CSS classes for tooltip text color based on status.
+ *
+ * @param {EventStatus} status - The status of the event.
+ * @returns {string} CSS class string.
+ */
 export function getTooltipStatusColor(status: EventStatus): string {
   switch (status) {
     case 'completed':
@@ -67,6 +63,12 @@ export function getTooltipStatusColor(status: EventStatus): string {
   }
 }
 
+/**
+ * Returns the CSS classes for severity text color.
+ *
+ * @param {string} severity - The severity level (e.g., 'CRITICAL').
+ * @returns {string} CSS class string.
+ */
 export function getSeverityColor(severity: string): string {
   switch (severity) {
     case 'CRITICAL':
@@ -80,6 +82,12 @@ export function getSeverityColor(severity: string): string {
   }
 }
 
+/**
+ * Returns the CSS classes for event log severity background.
+ *
+ * @param {EventSeverity} severity - The severity level.
+ * @returns {string} CSS class string.
+ */
 export function getSeverityEventLog(severity: EventSeverity): string {
   switch (severity) {
     case 'CRITICAL':
@@ -93,7 +101,12 @@ export function getSeverityEventLog(severity: EventSeverity): string {
   }
 }
 
-
+/**
+ * Returns the CSS classes for event log severity chips (text and background).
+ *
+ * @param {string} severity - The severity level.
+ * @returns {string} CSS class string.
+ */
 export function getSeverityEventLogChips(severity: string): string {
   switch (severity) {
     case 'CRITICAL':
@@ -107,6 +120,12 @@ export function getSeverityEventLogChips(severity: string): string {
   }
 }
 
+/**
+ * Returns the CSS classes for a status dot in the event log.
+ *
+ * @param {EventStatus} status - The event status.
+ * @returns {string} CSS class string.
+ */
 export function getStatusEventLogDot(status: EventStatus): string {
   switch (status) {
     case 'completed':
@@ -120,6 +139,12 @@ export function getStatusEventLogDot(status: EventStatus): string {
   }
 }
 
+/**
+ * Returns the CSS classes for a status chip in the event log.
+ *
+ * @param {EventStatus} status - The event status.
+ * @returns {string} CSS class string.
+ */
 export function getStatusEventLogChip(status: EventStatus): string {
   switch (status) {
     case 'completed':
@@ -132,4 +157,3 @@ export function getStatusEventLogChip(status: EventStatus): string {
       return 'mat-text-on-primary mat-bg-primary';
   }
 }
-
