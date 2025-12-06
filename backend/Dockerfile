@@ -11,10 +11,10 @@ COPY /backend/package*.json ./
 RUN npm install --omit=dev
 
 # Copy source code
-COPY . .
+COPY ./backend .
 
 # Expose the port
 EXPOSE 3000
 
 # Start the server
-CMD ["node", "/backend/src/server.js"]
+CMD ["node", "src/server.js"]
