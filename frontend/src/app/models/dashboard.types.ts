@@ -1,6 +1,7 @@
 export type EventType = 'completed' | 'pending' | 'anomaly';
 export type Severity = 'normal' | 'high' | number; // Backend sends numbers for anomaly
 export type DashboardFilter = EventType | 'all';
+export type ConnectionState = 'connecting' | 'connected' | 'disconnected';
 
 export interface LogEvent {
   id: string;
@@ -23,9 +24,14 @@ export interface HeatmapCell {
   count: number;
 }
 
-
-
-export type ConnectionState = 'connecting' | 'connected' | 'disconnected';
+export interface ChartDataPoint {
+  name: string;
+  value: [number, number]; // [Timestamp, JitterY]
+  type: string;
+  severity: number | string;
+  timestamp: number;
+  itemStyle: { color: string; borderColor?: string; borderWidth?: number };
+}
 
 export interface DashboardState {
   events: LogEvent[];
@@ -35,14 +41,5 @@ export interface DashboardState {
   connectionState: ConnectionState;
   isPaused: boolean;
   isStreamActive: boolean;
-}
-
-
-export interface ChartDataPoint {
-  name: string;
-  value: [number, number]; // [Timestamp, JitterY]
-  type: string;
-  severity: number | string;
-  timestamp: number;
-  itemStyle: { color: string; borderColor?: string; borderWidth?: number };
+  error: string | null;
 }
