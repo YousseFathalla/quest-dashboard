@@ -1,6 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideEchartsCore } from 'ngx-echarts';
 import { VolumeChart } from './volume-chart';
+import '../../../../test-setup';
+
+// Mock ECharts core
+const mockEchartsCore = {
+    use: () => {},
+    init: () => ({
+        setOption: () => {},
+        resize: () => {},
+        dispose: () => {},
+        on: () => {},
+        off: () => {},
+        isDisposed: () => false
+    })
+};
 
 describe('VolumeChart', () => {
   let component: VolumeChart;
@@ -8,7 +22,10 @@ describe('VolumeChart', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VolumeChart]
+      imports: [VolumeChart],
+      providers: [
+          provideEchartsCore({ echarts: mockEchartsCore })
+      ]
     })
     .compileComponents();
 

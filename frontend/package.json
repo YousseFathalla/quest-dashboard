@@ -47,11 +47,16 @@
     }
   },
   "devDependencies": {
+    "@angular/animations": "^21.0.2",
     "@angular/build": "^21.0.1",
     "@angular/cli": "^21.0.1",
     "@angular/compiler-cli": "^21.0.0",
+    "@vitest/browser-playwright": "^4.0.15",
     "fast-check": "^4.3.0",
-    "jsdom": "^27.1.0",
+    "jsdom": "^27.2.0",
+    "jsdom-global": "^3.0.2",
+    "playwright": "^1.57.0",
+    "resize-observer-polyfill": "^1.5.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }

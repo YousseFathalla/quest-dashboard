@@ -27,6 +27,9 @@ router.get("/", (req, res) => {
     }
   }, 10000);
 
+  // Unref to allow process exit if this is the only thing keeping it alive (though usually clients keep it alive)
+  if (chaosInterval.unref) chaosInterval.unref();
+
   req.on("close", () => {
     clearInterval(chaosInterval);
     removeClient();

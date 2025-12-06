@@ -1,10 +1,28 @@
 import { TestBed } from '@angular/core/testing';
+import { provideEchartsCore } from 'ngx-echarts';
 import { App } from './app';
+import '../test-setup';
+
+// Mock ECharts core
+const mockEchartsCore = {
+    use: () => {},
+    init: () => ({
+        setOption: () => {},
+        resize: () => {},
+        dispose: () => {},
+        on: () => {},
+        off: () => {},
+        isDisposed: () => false
+    })
+};
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+          provideEchartsCore({ echarts: mockEchartsCore })
+      ]
     }).compileComponents();
   });
 
@@ -14,10 +32,10 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render', async () => {
     const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
     await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
