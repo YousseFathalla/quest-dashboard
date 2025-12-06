@@ -48,7 +48,7 @@ export const DashboardStore = signalStore(
     anomalyCount: computed(() =>
       events().filter((e) => e.type === 'anomaly').length
     ),
-    anomalyCount: computed(() => events().filter((e) => e.type === 'anomaly').length),
+
   })),
 
   // 2. METHODS (Actions)
@@ -62,9 +62,6 @@ export const DashboardStore = signalStore(
        *
        * @param {ConnectionState} state - The new connection state.
        */
-      const setConnectionState = (state: ConnectionState) => {
-        const current = store.connectionState();
-        if (state === current) return;
     const setConnectionState = (state: ConnectionState) => {
       const current = store.connectionState();
       if (state === current) return;
@@ -114,42 +111,6 @@ export const DashboardStore = signalStore(
         )
       )
     );
-      // Load initial snapshot - does NOT affect connected state
-      // Only the stream determines if we're "LIVE"
-      /**
-       * Fetches the initial data snapshot (stats and history) from the backend.
-       * Retries on failure and handles loading state.
-       */
-      const loadSnapshot = rxMethod<void>(
-        pipe(
-          tap(() => patchState(store, { loading: true })),
-          switchMap(() =>
-            forkJoin({
-              stats: http.get<OverviewStats>(`${env.baseUrl}/stats/overview`),
-              history: http.get<LogEvent[]>(`${env.baseUrl}/stats/timeline`),
-            }).pipe(
-              tap(({ stats, history }) => {
-                patchState(store, {
-                  stats,
-                  events: history,
-                  loading: false,
-                });
-              }),
-              retry({
-                count: 10,
-                delay: () => {
-                  patchState(store, { loading: false });
-                  return timer(1000).pipe(take(1));
-                },
-              }),
-              catchError(() => {
-                patchState(store, { loading: false });
-                return of(null);
-              })
-            )
-          )
-        )
-      );
 
     const connectLiveStream = rxMethod<boolean>(
       pipe(
@@ -158,19 +119,6 @@ export const DashboardStore = signalStore(
             patchState(store, { connectionState: 'disconnected' });
             return EMPTY;
           }
-      /**
-       * Connects to the SSE stream for real-time updates.
-       * Manages reconnection logic and updates state on new events.
-       *
-       * @param {boolean} isActive - Whether the stream should be active.
-       */
-      const connectLiveStream = rxMethod<boolean>(
-        pipe(
-          switchMap((isActive) => {
-            if (!isActive) {
-              patchState(store, { connectionState: 'disconnected' });
-              return EMPTY;
-            }
 
           patchState(store, { connectionState: 'connecting' });
 
@@ -205,16 +153,6 @@ export const DashboardStore = signalStore(
           patchState(store, { isStreamActive: false });
           setConnectionState('disconnected');
           connectLiveStream(false);
-      /**
-       * Simulates a network error by disconnecting and reconnecting the stream.
-       * Used for demonstration or testing purposes.
-       */
-      const simulateError = rxMethod<void>(
-        pipe(
-          switchMap(() => {
-            patchState(store, { isStreamActive: false });
-            setConnectionState('disconnected');
-            connectLiveStream(false);
 
           return timer(10000).pipe(
             take(1),
@@ -232,14 +170,6 @@ export const DashboardStore = signalStore(
       setFilter(filter: DashboardFilter) {
         patchState(store, { filter });
       },
-      return {
-        /**
-         * Sets the dashboard filter.
-         * @param {DashboardFilter} filter - The filter to apply.
-         */
-        setFilter(filter: DashboardFilter) {
-          patchState(store, { filter });
-        },
 
       togglePause() {
         const nextIsPaused = !store.isPaused();
@@ -249,46 +179,20 @@ export const DashboardStore = signalStore(
         });
         connectLiveStream(!nextIsPaused);
       },
-        /**
-         * Toggles the pause state of the live stream.
-         */
-        togglePause() {
-          const nextIsPaused = !store.isPaused();
-          patchState(store, {
-            isPaused: nextIsPaused,
-            isStreamActive: !nextIsPaused,
-          });
-          connectLiveStream(!nextIsPaused);
-        },
 
       setStreamActive(isActive: boolean) {
         patchState(store, { isStreamActive: isActive });
         connectLiveStream(isActive);
       },
-        /**
-         * Sets the stream active state.
-         * @param {boolean} isActive - Whether the stream is active.
-         */
-        setStreamActive(isActive: boolean) {
-          patchState(store, { isStreamActive: isActive });
-          connectLiveStream(isActive);
-        },
 
       simulateError,
 
-        /**
-         * Refreshes the dashboard data by reloading the snapshot and reconnecting the stream.
-         */
-        refresh() {
-          patchState(store, { loading: true });
-          loadSnapshot();
-          connectLiveStream(store.isStreamActive());
-        },
       refresh() {
         patchState(store, { loading: true });
         loadSnapshot();
         connectLiveStream(store.isStreamActive());
       },
+
 
       // Load initial snapshot - does NOT affect connected state
       // Only the stream determines if we're "LIVE"

@@ -18,7 +18,7 @@ export type Severity = 'normal' | 'high' | number; // Backend sends numbers for 
  * Filter options for the dashboard events.
  */
 export type DashboardFilter = EventType | 'all';
-export type ConnectionState = 'connecting' | 'connected' | 'disconnected';
+
 
 /**
  * Represents a single log event in the system.
@@ -85,6 +85,8 @@ export interface DashboardState {
   isPaused: boolean;
   /** Indicates if the stream should be active. */
   isStreamActive: boolean;
+  /** Error message if data loading fails. */
+  error: string | null;
 }
 
 
