@@ -1,10 +1,23 @@
-// src/routes/stream.js
+/**
+ * @fileoverview Express router for handling Server-Sent Events (SSE) stream.
+ */
+
 import { Router } from "express";
-// ✅ FIX: Default import (no brackets) and camelCase name
 import streamManager from "../utils/stream-manager.js";
 
 const router = Router();
 
+/**
+ * GET /stream
+ * Establishes an SSE connection with the client.
+ * Sets appropriate headers and adds the client to the StreamManager.
+ * Also introduces a chaos element that randomly disconnects clients.
+ *
+ * @name GET/stream
+ * @function
+ * @param {import("express").Request} req - The Express request object.
+ * @param {import("express").Response} res - The Express response object.
+ */
 router.get("/", (req, res) => {
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -15,7 +28,7 @@ router.get("/", (req, res) => {
   // Send immediate comment to establish connection (doesn't trigger onmessage)
   res.write(': connected\n\n');
 
-  // ✅ FIX: Use the instance method
+  // Register client with StreamManager
   const removeClient = streamManager.addClient(res);
 
   // 😈 Chaos: Check every 10 seconds. 5% chance to kill connection.
@@ -27,6 +40,7 @@ router.get("/", (req, res) => {
     }
   }, 10000);
 
+  // Clean up on client disconnect
   req.on("close", () => {
     clearInterval(chaosInterval);
     removeClient();

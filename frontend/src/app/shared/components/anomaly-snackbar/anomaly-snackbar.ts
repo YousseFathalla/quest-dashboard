@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Snackbar component for displaying anomaly notifications.
+ * Shows the title and severity of the detected anomaly.
+ */
+
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
@@ -27,6 +32,8 @@ export interface AnomalySnackbarData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnomalySnackbar {
+  /** Injected data containing title and severity. */
   readonly data = inject<AnomalySnackbarData>(MAT_SNACK_BAR_DATA);
+  /** Reference to the snack bar container. */
   readonly snackBarRef = inject(MatSnackBarRef);
 }
