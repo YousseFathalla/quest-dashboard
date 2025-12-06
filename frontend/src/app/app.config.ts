@@ -8,8 +8,13 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts/core';
-import { BarChart, HeatmapChart, LineChart, ScatterChart } from 'echarts/charts';
-import { DataZoomComponent, GridComponent, LegendComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { BarChart, HeatmapChart, LineChart } from 'echarts/charts';
+import {
+  GridComponent,
+  LegendComponent,
+  TooltipComponent,
+  VisualMapComponent,
+} from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
 import { routes } from './app.routes';
@@ -20,12 +25,10 @@ echarts.use([
   BarChart,
   LineChart,
   HeatmapChart,
-  ScatterChart,
   GridComponent,
   TooltipComponent,
   VisualMapComponent,
   LegendComponent,
-  DataZoomComponent,
   CanvasRenderer,
 ]);
 
@@ -38,5 +41,5 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([errorInterceptor])),
     provideEchartsCore({ echarts }),
-  ]
+  ],
 };

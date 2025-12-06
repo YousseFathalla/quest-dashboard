@@ -9,10 +9,7 @@ import {
   signal,
   computed,
   ChangeDetectionStrategy,
-  PLATFORM_ID,
-  DestroyRef,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import {
   MatCard,
@@ -24,7 +21,7 @@ import {
 import { MatChipsModule } from '@angular/material/chips';
 import type { EChartsOption } from 'echarts';
 import { DashboardStore } from 'app/store/dashboard.store';
-import { ChartDataPoint, DashboardFilter, LogEvent } from 'app/models/dashboard.types';
+import { DashboardFilter } from 'app/models/dashboard.types';
 import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
 @Component({
@@ -43,31 +40,12 @@ import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-load
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimeLine {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly destroyRef = inject(DestroyRef);
-
   // ✅ 1. Inject Store
   readonly store = inject(DashboardStore);
 
   // ✅ 2. Define Filters (Matches Store Types)
   /** Available filters for the timeline. */
   readonly filters = signal<DashboardFilter[]>(['all', 'completed', 'pending', 'anomaly']);
-
-  // ✅ 3. Responsive Logic
-  private readonly windowWidth = signal<number>(0);
-  private readonly isMobile = computed(() => this.windowWidth() <= 640);
-  private readonly pointSize = computed(() => (this.isMobile() ? 10 : 14));
-
-  constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.windowWidth.set(window.innerWidth);
-      const resizeObserver = new ResizeObserver((entries) => {
-        this.windowWidth.set(entries[0].contentRect.width);
-      });
-      resizeObserver.observe(document.body);
-      this.destroyRef.onDestroy(() => resizeObserver.disconnect());
-    }
-  }
 
   // ✅ 4. Interaction (Delegates to Store)
   /**
@@ -79,170 +57,111 @@ export class TimeLine {
     this.store.setFilter(next);
   }
 
-  // ✅ 5. Data Transformation (Computed = Efficient)
-  private readonly chartData = computed<ChartDataPoint[]>(() => {
+
+  // ✅ 5. Data Transformation (Aggregated by Hour for Stacked Bar)
+  private readonly chartData = computed(() => {
     const events = this.store.visibleEvents();
 
-    // Group by timestamp to handle collisions (Visual Jitter)
-    const groups = new Map<number, LogEvent[]>();
-    events.forEach((e) => {
-      if (!groups.has(e.timestamp)) groups.set(e.timestamp, []);
-      groups.get(e.timestamp)!.push(e);
+    // Initialize 24-hour buckets
+    const hours = Array.from({ length: 24 }, (_, i) => ({
+      hour: `${i.toString().padStart(2, '0')}:00`,
+      completed: 0,
+      pending: 0,
+      anomaly: 0,
+    }));
+
+    // Aggregate events
+    events.forEach(e => {
+      const date = new Date(e.timestamp);
+      const hour = date.getHours();
+      if (hour >= 0 && hour < 24) {
+        if (e.type === 'completed') hours[hour].completed++;
+        else if (e.type === 'pending') hours[hour].pending++;
+        else if (e.type === 'anomaly') hours[hour].anomaly++;
+      }
     });
-
-    // Flatten to Chart Points
-    return Array.from(groups.entries()).flatMap(([ts, group]) => {
-      return group.map((e, index) => {
-        // Jitter Y-axis slightly so points don't overlap perfectly
-        const jitterY = 0.5 + (index - (group.length - 1) / 2) * 0.15;
-
-        return {
-          name: `Event #${e.id}`,
-          value: [e.timestamp, jitterY],
-          type: e.type,
-          severity: e.severity || 1,
-          timestamp: e.timestamp,
-          itemStyle: {
-            color: this.getStatusColor(e.type),
-            borderColor: this.getSeverityColor(e.severity),
-            borderWidth: this.isHighSeverity(e.severity) ? 2 : 0,
-          },
-        };
-      });
-    });
-  });
-
-  // ✅ 6. Chart Options (Reactive)
-  readonly chartOption = computed<EChartsOption>(() => {
-    const mobile = this.isMobile();
-    const size = this.pointSize();
 
     return {
-      backgroundColor: 'transparent',
-      grid: {
-        left: mobile ? 40 : 60,
-        right: mobile ? 10 : 20,
-        top: 20,
-        bottom: 40,
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: (params: any) => this.getTooltipHtml(params.data),
-        backgroundColor: 'var(--mat-sys-surface-container-highest, #fff)',
-        borderColor: 'var(--mat-sys-outline-variant, #ccc)',
-        borderWidth: 1,
-        padding: 12,
-        extraCssText: 'border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);',
-      },
-      xAxis: {
-        type: 'time',
-        boundaryGap: ['2%', '2%'],
-        axisLine: { show: false },
-        axisTick: { show: false },
-        splitLine: { show: false },
-        axisLabel: {
-          color: '#9ca3af',
-          fontSize: mobile ? 10 : 12,
-          formatter: '{HH}:{mm}:{ss}',
-        },
-      },
-      yAxis: {
-        type: 'value',
-        show: false, // Y-axis is purely for visual jitter
-        min: 0,
-        max: 1,
-      },
-      dataZoom: [
-        { type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: true },
-        {
-          type: 'slider',
-          show: !mobile,
-          height: 16,
-          bottom: 10,
-          borderColor: 'transparent',
-          backgroundColor: '#f1f5f9',
-          fillerColor: 'rgba(100, 116, 139, 0.2)',
-        },
-      ],
-      series: [
-        {
-          type: 'scatter',
-          symbol: 'circle',
-          symbolSize: size,
-          data: this.chartData(),
-          animationDelay: (idx) => idx * 2, // Smooth entry
-        },
-      ],
+      categories: hours.map(h => h.hour),
+      completed: hours.map(h => h.completed),
+      pending: hours.map(h => h.pending),
+      anomaly: hours.map(h => h.anomaly),
     };
   });
 
-  // --- Helpers (Inlined for Stability) ---
+  // ✅ 6. Chart Options (Reactive Stacked Bar)
+  readonly chartOption = computed<EChartsOption>(() => {
+    const data = this.chartData();
 
-  /**
-   * Returns the color associated with an event status.
-   * @param {string} status - The event status.
-   * @returns {string} Hex color string.
-   */
-  private getStatusColor(status: string): string {
-    switch (status) {
-      case 'completed':
-        return '#22c55e'; // Green
-      case 'pending':
-        return '#eab308'; // Yellow
-      case 'anomaly':
-        return '#ef4444'; // Red
-      default:
-        return '#94a3b8'; // Gray
-    }
-  }
-
-  /**
-   * Checks if the severity is considered high.
-   * @param {number|string} [severity] - The severity level.
-   * @returns {boolean} True if high severity.
-   */
-  private isHighSeverity(severity?: number | string): boolean {
-    if (typeof severity === 'number') return severity > 3;
-    return severity === 'high';
-  }
-
-  /**
-   * Returns the border color based on severity.
-   * @param {number|string} [severity] - The severity level.
-   * @returns {string} Hex color string or 'transparent'.
-   */
-  private getSeverityColor(severity?: number | string): string {
-    return this.isHighSeverity(severity) ? '#b91c1c' : 'transparent';
-  }
-
-  /**
-   * Generates the HTML content for the chart tooltip.
-   * @param {ChartDataPoint} data - The data point.
-   * @returns {string} HTML string.
-   */
-  private getTooltipHtml(data: ChartDataPoint): string {
-    if (!data) return '';
-    const date = new Date(data.timestamp);
-    const severityClass = this.isHighSeverity(data.severity) ? 'text-warn' : '';
-
-    return `
-      <div class="timeline-tooltip">
-        <div class="tooltip-header" style="color: ${data.itemStyle.color}">
-          ${data.type.toUpperCase()}
-        </div>
-        <div class="tooltip-row">
-          <span>Time:</span>
-          <strong>${date.toLocaleTimeString()}</strong>
-        </div>
-        <div class="tooltip-row">
-          <span>Date:</span>
-          <span>${date.toLocaleDateString()}</span>
-        </div>
-        <div class="tooltip-row">
-          <span>Severity:</span>
-          <span class="${severityClass}">${data.severity}</span>
-        </div>
-      </div>
-    `;
-  }
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }, // Show helpful shadow on hover
+        backgroundColor: 'var(--mat-sys-surface-container-highest, #fff)',
+        borderColor: 'var(--mat-sys-outline-variant, #ccc)',
+        textStyle: { color: 'var(--mat-sys-on-surface, #000)' },
+      },
+      legend: {
+        data: ['Completed', 'Pending', 'Anomalies'],
+        bottom: 0,
+        textStyle: { color: '#9ca3af' }, // Matches existing gray style
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '10%',
+        top: '3%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'value',
+        splitLine: {
+            show: true,
+            lineStyle: { color: 'rgba(0,0,0,0.05)' }
+        },
+        axisLabel: { color: '#9ca3af' },
+      },
+      yAxis: {
+        type: 'category',
+        data: data.categories,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: '#9ca3af' },
+        inverse: true, // 00:00 at top
+      },
+      series: [
+        {
+          name: 'Completed',
+          type: 'bar',
+          stack: 'total',
+          emphasis: { focus: 'series' },
+          data: data.completed,
+          itemStyle: { color: '#22c55e' }, // Green
+          animationDelay: (idx) => idx * 10,
+        },
+        {
+          name: 'Pending',
+          type: 'bar',
+          stack: 'total',
+          emphasis: { focus: 'series' },
+          data: data.pending,
+          itemStyle: { color: '#eab308' }, // Yellow
+          animationDelay: (idx) => idx * 10 + 100,
+        },
+        {
+          name: 'Anomalies',
+          type: 'bar',
+          stack: 'total',
+          emphasis: { focus: 'series' },
+          data: data.anomaly,
+          itemStyle: { color: '#ef4444' }, // Red
+          animationDelay: (idx) => idx * 10 + 200,
+        }
+      ],
+      animationEasing: 'elasticOut',
+      animationDelayUpdate: (idx) => idx * 5,
+    };
+  });
 }
+

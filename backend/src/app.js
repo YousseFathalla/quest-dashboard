@@ -24,7 +24,7 @@ app.use(cors());
  */
 const chaosMiddleware = (req, res, next) => {
   if (req.url.startsWith("/stats") && Math.random() < 0.05) {
-    console.log(`💥 Chaos Monkey struck: ${req.url}`);
+    console.log(`Simulated Backend Failure: ${req.url}`);
     return res.status(500).json({ error: "Simulated Backend Failure (Bonus Feature)" });
   }
   next();

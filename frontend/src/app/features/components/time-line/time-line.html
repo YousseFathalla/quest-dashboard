@@ -1,15 +1,15 @@
-<section class="h-full relative min-h-[300px]">
+<section class="h-full relative min-h-[600px]">
   @if (store.loading()) {
   <app-skeleton-loader />
   }
   <article class="h-full">
-    <mat-card class="h-full">
+    <mat-card class="h-full flex flex-col">
       <mat-card-header class="flex flex-wrap gap-4 justify-between items-center">
         <mat-card-title class="mat-font-title-lg text-primary">
-          Live Event Timeline
+          Hourly Event Distribution
         </mat-card-title>
         <mat-card-subtitle class="mat-font-body-lg">
-          Auto-scrolling on every new event
+          Events aggregated by hour (24h)
         </mat-card-subtitle>
 
         <div class="timeline-actions">
@@ -27,7 +27,7 @@
         </div>
       </mat-card-header>
 
-      <mat-card-content>
+      <mat-card-content class="grow relative">
         <div echarts [options]="chartOption()" class="w-full h-full"></div>
       </mat-card-content>
     </mat-card>
