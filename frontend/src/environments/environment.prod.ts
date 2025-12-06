@@ -1,5 +1,5 @@
 export const env = {
   production: true,
-  baseUrl: '/api', // Proxied via Nginx
-}
+  baseUrl: 'https://quest-dashboard-production-edef.up.railway.app', // in real project we place this url;
+};
 
