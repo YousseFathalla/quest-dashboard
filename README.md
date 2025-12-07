@@ -23,7 +23,7 @@ A real-time analytics dashboard for legal operations, designed to provide visibi
 
 ## 🏆 Challenge Compliance Matrix
 
-We have meticulously implemented every requirement of the coding challenge, plus all "Optional" and "Bonus" features.
+I have meticulously implemented every requirement of the coding challenge, plus all "Optional" and "Bonus" features.
 
 | Challenge Step | Status | Implementation Details |
 | :--- | :---: | :--- |
@@ -165,6 +165,7 @@ The codebase is fully documented using JSDoc (Backend) and TSDoc (Frontend).
 - **Chaos Monkey**: The backend includes a "Chaos Middleware" that randomly injects errors (5% rate) and disconnects streams to test frontend resilience.
 - **Property-Based Testing**: The frontend uses `fast-check` to generate arbitrary data for robust testing of utility functions.
 - **Path Aliases**: Clean imports using `tsconfig.json` shortcuts (e.g., `@core/`, `@features/`, `@shared/`, `@layout/`, `@models/`, `@env/`) for better maintainability.
+- **Safe Logging**: Custom `LoggerService` ensures debug information is valid only in development mode, keeping production consoles clean and secure.
 
 ## 🛡️ License
 

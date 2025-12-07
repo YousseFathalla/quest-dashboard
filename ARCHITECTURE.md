@@ -58,7 +58,7 @@ The "Legacy" endpoints are fully functional to demonstrate strict compliance wit
 
 ## 🛡️ Resilience, Stability & Chaos Engineering (Bonus)
 
-To demonstrate robustness and simulate a distributed environment, we implemented a custom **Chaos Middleware** (`backend/src/app.js`).
+To demonstrate robustness and simulate a distributed environment, i implemented a custom **Chaos Middleware** (`backend/src/app.js`).
 
 - **Chaos Engineering**:
   - **Random Failures**: 5% of API snapshots fail with a 500 status to test retry logic.
@@ -78,6 +78,16 @@ To demonstrate robustness and simulate a distributed environment, we implemented
 - **Change Detection**: **OnPush** strategy is enabled globally to minimize change detection cycles.
 - **Build Optimization**: Uses **Esbuild** (via Angular 21 CLI) for sub-second builds and tree-shaking.
 - **Canvas Rendering**: ECharts is configured to use the **Canvas renderer** (not SVG) to handle 10k+ data points at 60fps.
+
+## 🔧 Developer Experience & Tooling
+
+### Logger Service (`frontend/src/app/shared/services/logger/logger.service.ts`)
+
+To maintain a clean production environment while providing detailed feedback during development, i implemented a custom **LoggerService**.
+
+- **Environment-Aware**: Automatically suppresses logs (`info`, `debug`, `warn`) in production builds using Angular's `isDevMode()`.
+- **Consistent Formatting**: Enforces a standardized log structure (e.g., `[INFO] Message`, `[ERROR] Message`) for easier parsing and debugging.
+- **Centralized Control**: Precise wrappers around `console` methods allow for future enhancements (e.g., shipping logs to Sentry/Datadog) without refactoring component code.
 
 ## 🔄 Data Flow
 
