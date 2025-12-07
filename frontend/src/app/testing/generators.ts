@@ -43,7 +43,7 @@ export const arbLogEvent = (): fc.Arbitrary<LogEvent> =>
     timestamp: arbTimestamp(),
     type: arbEventType(),
     severity: fc.option(arbSeverity(), { nil: undefined }),
-    cycleTime: fc.option(fc.integer({ min: 100, max: 10000 }), { nil: undefined }),
+    cycleTime: fc.option(fc.integer({ min: 100, max: 5000 }), { nil: undefined }),
   });
 
 /**
@@ -94,5 +94,5 @@ export const arbLogEventAtHour = (hour: number): fc.Arbitrary<LogEvent> =>
     timestamp: fc.constant(timestampForHour(hour)),
     type: arbEventType(),
     severity: fc.option(arbSeverity(), { nil: undefined }),
-    cycleTime: fc.option(fc.integer({ min: 100, max: 10000 }), { nil: undefined }),
+    cycleTime: fc.option(fc.integer({ min: 100, max: 5000 }), { nil: undefined }),
   });

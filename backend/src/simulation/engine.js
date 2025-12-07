@@ -60,6 +60,17 @@ export function startSimulation() {
         store.anomalies.push(event);
       }
 
+      // 1.5 Limit Store Size (Prevent Memory Leak)
+      const MAX_EVENTS = 5000;
+      if (store.events.length > MAX_EVENTS) {
+        // Remove oldest events
+        store.events = store.events.slice(-MAX_EVENTS);
+        // Also cleanup anomalies if needed, though they are fewer
+        if (store.anomalies.length > MAX_EVENTS) {
+          store.anomalies = store.anomalies.slice(-MAX_EVENTS);
+        }
+      }
+
       // 2. Recalculate Stats
       updateMetrics();
 

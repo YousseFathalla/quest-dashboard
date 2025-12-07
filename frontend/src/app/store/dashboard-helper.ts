@@ -3,6 +3,7 @@
  * Contains pure functions to calculate pure state based on incoming events.
  */
 
+import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
 import { DashboardState, LogEvent } from '@models/dashboard.types';
 
 /**
@@ -19,8 +20,8 @@ export function calculateStateFromEvent(
 ): Partial<DashboardState> {
   if (state.isPaused) return {};
 
-  // Limit to 5000 to cover ~24h of history (approx 240 events/hour * 24h = 5760 max)
-  const updatedEvents = [newEvent, ...state.events].slice(0, 5000);
+  // Limit events to prevent memory issues, using configured constant
+  const updatedEvents = [newEvent, ...state.events].slice(0, DASHBOARD_CONSTANTS.MAX_EVENTS_HISTORY);
 
   // Optimistic UI Update for Stats
   const updatedStats = { ...state.stats };
@@ -30,8 +31,7 @@ export function calculateStateFromEvent(
   }
 
   // Recalculate SLA dynamically based on the rolling window
-  // Use slice(0, 5000) to match the stored events limit
-  const recentWindow = updatedEvents.slice(0, 5000);
+  const recentWindow = updatedEvents.slice(0, DASHBOARD_CONSTANTS.MAX_EVENTS_HISTORY);
   const recentAnomalies = recentWindow.filter((e) => e.type === 'anomaly').length;
   const recentNonAnomalies = recentWindow.length - recentAnomalies;
   updatedStats.slaCompliance =
