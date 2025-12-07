@@ -1,14 +1,11 @@
-
 import * as fc from 'fast-check';
-import { arbLogEvents } from 'app/testing/generators';
+import { arbLogEvents } from '@shared/tests/generators';
 import {
   processAnomalyEvents,
   generateTimeSlots,
   SEVERITY_COLORS,
 } from '@shared/utilities/heat-map.utils';
 import { LogEvent } from '@models/dashboard.types';
-
-
 
 // Helper functions to reduce nesting
 const verifyHeatMapItem = (item: any, slots: any[], validAnomalies: LogEvent[]) => {
@@ -36,7 +33,7 @@ const verifyHeatMapProperty = (events: LogEvent[]) => {
     (e) => e.type === 'anomaly' && e.timestamp >= minTime && e.timestamp < maxTime
   );
 
-  const totalMappedCount = heatmapData.reduce((sum, item) => sum + (item.value[2]), 0);
+  const totalMappedCount = heatmapData.reduce((sum, item) => sum + item.value[2], 0);
 
   expect(totalMappedCount).toBe(validAnomalies.length);
 
