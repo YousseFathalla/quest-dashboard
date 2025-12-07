@@ -111,6 +111,24 @@ quest-dashboard/
 
    The frontend will be available at `http://localhost:4200`.
 
+## 🧪 Testing
+
+This project uses [Vitest](https://vitest.dev/) as the unit test runner for the Angular 21 frontend application, complemented by [Fast-check](https://fast-check.dev/) for property-based testing.
+
+To run the unit tests, navigate to the `frontend` directory and execute:
+
+```bash
+cd frontend
+npm test
+```
+
+To run end-to-end tests:
+
+```bash
+cd frontend
+npm run e2e
+```
+
 ### ⚙️ Environment Variables
 
 The application supports the following environment variables for configuration:
