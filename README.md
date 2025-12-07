@@ -132,6 +132,7 @@ The codebase is fully documented using JSDoc (Backend) and TSDoc (Frontend).
 
 - **Chaos Monkey**: The backend includes a "Chaos Middleware" that randomly injects errors (5% rate) and disconnects streams to test frontend resilience.
 - **Property-Based Testing**: The frontend uses `fast-check` to generate arbitrary data for robust testing of utility functions.
+- **Path Aliases**: Clean imports using `tsconfig.json` shortcuts (e.g., `@core/`, `@features/`, `@shared/`, `@layout/`, `@models/`, `@env/`) for better maintainability.
 
 ## 🛡️ License
 

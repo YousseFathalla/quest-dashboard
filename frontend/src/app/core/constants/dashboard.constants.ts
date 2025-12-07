@@ -5,7 +5,7 @@
 
 export const DASHBOARD_CONSTANTS = {
   /** The number of recent events to display in the overview widget. */
-  RECENT_EVENTS_COUNT: 5,
+  RECENT_EVENTS_COUNT: 6,
   /** The maximum number of events to retain in the store history. */
   MAX_EVENTS_HISTORY: 1000,
   /** The height of the timeline chart in pixels. */

@@ -13,7 +13,7 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { MatCard, MatCardHeader, MatCardContent } from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
 import {
   MatButtonToggleGroup,
   MatButtonToggle,
@@ -23,9 +23,7 @@ import type { EChartsOption } from 'echarts';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
 import { LogEvent } from '@models/dashboard.types';
-import { SkeletonLoader } from "@shared/components/skeleton-loader/skeleton-loader";
-
-
+import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
 type TimeRange = '6h' | '12h' | '24h';
 
@@ -33,9 +31,7 @@ type TimeRange = '6h' | '12h' | '24h';
   selector: 'app-volume-chart',
   imports: [
     NgxEchartsDirective,
-    MatCard,
-    MatCardHeader,
-    MatCardContent,
+    MatCardModule,
     MatButtonToggleGroup,
     MatButtonToggle,
     SkeletonLoader,
@@ -51,7 +47,6 @@ export class VolumeChart {
   protected readonly timeRanges: TimeRange[] = ['6h', '12h', '24h'];
   protected readonly selectedTimeRange = signal<TimeRange>('24h');
   protected readonly updateVolumeOption = signal<EChartsOption>({});
-
 
   protected readonly volumeOption = signal<EChartsOption>({
     tooltip: {
@@ -124,7 +119,6 @@ export class VolumeChart {
     ],
   });
 
-
   constructor() {
     this.destroyRef.onDestroy(() => {
       if (this.updateTimeout !== null) {
@@ -132,43 +126,41 @@ export class VolumeChart {
       }
     });
 
-    effect(
-      () => {
-        const events = this.store.events();
-        const timeRange = this.selectedTimeRange();
+    effect(() => {
+      const events = this.store.events();
+      const timeRange = this.selectedTimeRange();
 
-        if (this.updateTimeout !== null) {
-          clearTimeout(this.updateTimeout);
-        }
-
-        this.updateTimeout = globalThis.setTimeout(() => {
-          const filteredEvents = this.filterEventsByTimeRange(events, timeRange);
-          const volumeMap = new Map<string, { total: number; critical: number }>();
-
-          filteredEvents.forEach((e: LogEvent) => {
-            const hourLabel = new Date(e.timestamp).getHours() + ':00';
-            const current = volumeMap.get(hourLabel) || { total: 0, critical: 0 };
-
-            current.total++;
-            if (e.type === 'anomaly') current.critical++;
-
-            volumeMap.set(hourLabel, current);
-          });
-
-          // Generate hour labels based on selected time range
-          const hoursToShow = this.getHoursForRange(timeRange);
-
-          this.updateVolumeOption.set({
-            xAxis: { data: hoursToShow },
-            series: [
-              { data: hoursToShow.map((h) => volumeMap.get(h)?.total || 0) },
-              { data: hoursToShow.map((h) => volumeMap.get(h)?.critical || 0) },
-            ],
-          });
-          this.updateTimeout = null;
-        }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
+      if (this.updateTimeout !== null) {
+        clearTimeout(this.updateTimeout);
       }
-    );
+
+      this.updateTimeout = globalThis.setTimeout(() => {
+        const filteredEvents = this.filterEventsByTimeRange(events, timeRange);
+        const volumeMap = new Map<string, { total: number; critical: number }>();
+
+        filteredEvents.forEach((e: LogEvent) => {
+          const hourLabel = new Date(e.timestamp).getHours() + ':00';
+          const current = volumeMap.get(hourLabel) || { total: 0, critical: 0 };
+
+          current.total++;
+          if (e.type === 'anomaly') current.critical++;
+
+          volumeMap.set(hourLabel, current);
+        });
+
+        // Generate hour labels based on selected time range
+        const hoursToShow = this.getHoursForRange(timeRange);
+
+        this.updateVolumeOption.set({
+          xAxis: { data: hoursToShow },
+          series: [
+            { data: hoursToShow.map((h) => volumeMap.get(h)?.total || 0) },
+            { data: hoursToShow.map((h) => volumeMap.get(h)?.critical || 0) },
+          ],
+        });
+        this.updateTimeout = null;
+      }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
+    });
   }
 
   /**

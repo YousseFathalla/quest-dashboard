@@ -7,8 +7,8 @@
       <mat-card-header>
         <div class="flex justify-between items-center w-full">
           <div class="flex flex-col">
-            <div class="mat-font-title-md">Workflow Volume</div>
-            <div class="text-sm text-gray-400">Events aggregated by hour (Past {{ selectedTimeRange() }})</div>
+            <mat-card-title class="mat-text-primary">Workflow Volume</mat-card-title>
+            <mat-card-subtitle class="mat-text-secondary">Events aggregated by hour (Past {{ selectedTimeRange() }})</mat-card-subtitle>
           </div>
           <mat-button-toggle-group
             [value]="selectedTimeRange()"

@@ -14,13 +14,7 @@ import {
 } from '@angular/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import type { ECharts } from 'echarts/core';
-import {
-  MatCard,
-  MatCardHeader,
-  MatCardContent,
-  MatCardTitle,
-  MatCardSubtitle,
-} from '@angular/material/card';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -39,22 +33,12 @@ import {
   formatTooltip,
   processAnomalyEvents,
   TimeSlot,
-} from './heat-map.utils';
+} from '@shared/utilities/heat-map.utils';
 import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
 @Component({
   selector: 'app-heat-map',
-  imports: [
-    NgxEchartsDirective,
-    MatCard,
-    MatCardHeader,
-    MatCardContent,
-    MatCardTitle,
-    MatCardSubtitle,
-    SkeletonLoader,
-    MatIcon,
-    MatButton,
-  ],
+  imports: [NgxEchartsDirective, MatCardModule, SkeletonLoader, MatIcon, MatButton],
   templateUrl: './heat-map.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -149,34 +133,32 @@ export class HeatMap {
       }
     });
 
-    effect(
-      () => {
-        const events = this.store.events();
+    effect(() => {
+      const events = this.store.events();
 
-        if (this.updateTimeout !== null) {
-          clearTimeout(this.updateTimeout);
-        }
-
-        this.updateTimeout = globalThis.setTimeout(() => {
-          // Generate dynamic time slots for past 24 hours
-          this.currentTimeSlots = generateTimeSlots();
-          const timeSlotLabels = this.currentTimeSlots.map((s) => s.label);
-
-          // Process anomaly events using helper
-          const heatmapData = processAnomalyEvents(events, this.currentTimeSlots);
-
-          this.updateHeatmapOptions.set({
-            xAxis: { data: timeSlotLabels },
-            series: [
-              {
-                data: heatmapData,
-              },
-            ],
-          });
-          this.updateTimeout = null;
-        }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
+      if (this.updateTimeout !== null) {
+        clearTimeout(this.updateTimeout);
       }
-    );
+
+      this.updateTimeout = globalThis.setTimeout(() => {
+        // Generate dynamic time slots for past 24 hours
+        this.currentTimeSlots = generateTimeSlots();
+        const timeSlotLabels = this.currentTimeSlots.map((s) => s.label);
+
+        // Process anomaly events using helper
+        const heatmapData = processAnomalyEvents(events, this.currentTimeSlots);
+
+        this.updateHeatmapOptions.set({
+          xAxis: { data: timeSlotLabels },
+          series: [
+            {
+              data: heatmapData,
+            },
+          ],
+        });
+        this.updateTimeout = null;
+      }, DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS);
+    });
   }
 
   /**
@@ -210,8 +192,7 @@ export class HeatMap {
     // Filter anomalies by time slot and severity
     const filteredEvents = this.store.events().filter((event: LogEvent) => {
       if (event.type !== 'anomaly') return false;
-      const matchesTimeSlot =
-        event.timestamp >= slot.startTime && event.timestamp < slot.endTime;
+      const matchesTimeSlot = event.timestamp >= slot.startTime && event.timestamp < slot.endTime;
       const eventSeverity = typeof event.severity === 'number' ? event.severity : 1;
       const matchesSeverity = eventSeverity === severity;
       return matchesTimeSlot && matchesSeverity;
