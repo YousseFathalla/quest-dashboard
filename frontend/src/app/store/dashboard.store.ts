@@ -11,6 +11,7 @@ import {
   withState,
   withComputed,
 } from '@ngrx/signals';
+import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { computed, inject } from '@angular/core';
 import { tap, switchMap, take, retry, catchError } from 'rxjs/operators';
@@ -28,6 +29,7 @@ import { initialState } from './dashboard.slice';
  */
 export const DashboardStore = signalStore(
   { providedIn: 'root' },
+  withDevtools('dashboard'),
   withState(initialState),
 
   // 1. COMPUTED (Selectors)

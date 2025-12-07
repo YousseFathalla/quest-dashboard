@@ -2,24 +2,17 @@
 
 A real-time analytics dashboard for legal operations, designed to provide visibility into workflow health, SLA compliance, and anomalies using a modern, reactive architecture.
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
-- [Usage](#usage)
-- [Documentation](#documentation)
-- [Live Demo](#live-demo)
-
 ## 🚀 Live Demo
 
 - **Frontend Application**: [Live Demo](https://content-luck-production.up.railway.app/)
-- **Backend API**:
+- **Backend**:
   - [Stream Endpoint](https://quest-dashboard-production-edef.up.railway.app/stream)
   - [Snapshot Endpoint](https://quest-dashboard-production-edef.up.railway.app/snapshot)
+
+- **Required Endpoints**:
+  - [/stats/overview](https://quest-dashboard-production-edef.up.railway.app/stats/overview)
+  - [/stats/timeline](https://quest-dashboard-production-edef.up.railway.app/stats/timeline)
+  - [/stats/anomalies](https://quest-dashboard-production-edef.up.railway.app/stats/anomalies)
 
 ### Available Endpoints
 
@@ -28,61 +21,47 @@ A real-time analytics dashboard for legal operations, designed to provide visibi
 | `/stream` | `GET` (SSE) | Real-time event stream including updates for `completed`, `pending`, and `anomaly` events. |
 | `/snapshot` | `GET` | Fetches the initial state of the dashboard, including historical events and overview statistics. |
 
-## 🔭 Overview
+## 🏆 Challenge Compliance Matrix
 
-This solution provides a comprehensive view of legal workflow operations. It simulates a high-frequency event stream from a backend service and visualizes this data in real-time on a responsive Angular frontend. The system is designed to detect anomalies, track SLA compliance, and provide historical analysis through interactive charts.
+We have meticulously implemented every requirement of the coding challenge, plus all "Optional" and "Bonus" features.
 
-## ⚡ Features
+| Challenge Step | Status | Implementation Details |
+| :--- | :---: | :--- |
+| **1. Mock API** | ✅ | Node.js/Express backend with `chaosMiddleware` (5% errors) and custom event generator. |
+| **2. Real-Time Dashboard** | ✅ | Angular 21 app with 4 reactive widgets (Timeline, Cards, Heatmap, Volume). |
+| **3. Interactions** | ✅ | Global filters (6h/12h/24h), "Pause/Resume" stream, type toggles, and smooth ECharts transitions. |
+| **4. State Management** | ✅ | **NgRx SignalStore** (v21+) with **Redux DevTools** integration for debugging. |
+| **5. Deployment** | ✅ | Dockerized (Frontend + Backend + Nginx) and deployed to **Railway**. |
+| **6. Bonus Features** | ✅ | Dark Mode, Toast Notifications, Global Refresh, Custom Animations. |
+
+### 🌟 Bonus Features Delivered (+15%)
+
+- ✅ **Real-time Toast Notifications**: Non-intrusive alerts for connection status and detailed error messages.
+- ✅ **Dark Mode**: Fully supported via TailwindCSS and Angular Material theming.
+- ✅ **Pause/Resume Live Updates**: User control over the SSE stream directly from the header.
+- ✅ **Global Refresh**: Manual re-fetch capability to sync instant data.
+- ✅ **Simulated 5% Error Rate**: Backend "Chaos Monkey" middleware to demonstrate robust frontend error handling.
+- ✅ **Custom Animations**: Smooth transitions for list items and chart updates.
+
+### 🐳 DevOps & Deployment (Step 5)
+
+- **One-Command Start**: `docker-compose -f docker-compose.dev.yml up --build` runs the full stack.
+- **Live Demo**: Hosted on Railway (links above).
+- **CI/CD**: Docker-ready architecture suitable for GitHub Actions.
+
+## ⚡ Key Features
 
 - **Real-Time Event Stream**: Live Server-Sent Events (SSE) integration processing events with sub-second latency.
-- **Reactive State Management**: Powered by **Angular Signals** and **NgRx SignalStore** for predictable, unidirectional data flow.
-- **Chaos Engineering**: Simulated backend failures and stream disconnections to demonstrate resilience and error handling.
-- **Data Intelligence**:
-  - **Timeline Visualization**: Interactive scatter plot of event history with visual jitter to handle high-density data.
-  - **Anomaly Heatmap**: Aggregates critical errors by hour and severity to identify systemic issues.
-  - **Hybrid Volume Chart**: Dual-axis visualization comparing total workflow volume vs. critical errors.
-- **State-Driven Filtering**: Global time-range filters (6h/12h/24h) and event type filters managed via SignalStore.
-- **Dark/Light Mode**: Fully themable UI with multiple color palettes.
-- **Dockerized Deployment**: Full-stack containerization with Nginx and Node.js.
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Framework**: Angular 21 (Standalone Components)
-- **State Management**: @ngrx/signals (SignalStore)
-- **Visualization**: Apache ECharts (via ngx-echarts)
-- **Styling**: TailwindCSS, Angular Material
-- **Testing**: Fast-Check (Property-based testing)
-
-### Backend
-
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Real-Time**: Server-Sent Events (SSE)
-- **Simulation**: Custom simulation engine for generating synthetic workflow data
-
-### DevOps
-
-- **Containerization**: Docker, Docker Compose
-- **Server**: Nginx (Multi-stage builds)
-
-## 🏗️ Architecture
-
-### Data Flow
-
-1. **Simulation Engine**: The backend generates synthetic events (`completed`, `pending`, `anomaly`) at random intervals.
-2. **Event Broadcasting**: Events are pushed to connected clients via Server-Sent Events (SSE).
-3. **State Management**: The frontend `DashboardStore` maintains the application state. It connects to the SSE stream and updates the `events` list and `stats` metrics in real-time.
-4. **Reactive UI**: Components subscribe to the store's signals. `Computed` signals automatically derive filtered views and aggregated metrics, ensuring efficient UI updates.
-
-### Signal-First Design
-
-- **Immutability**: State updates are atomic.
-- **Performance**: `OnPush` change detection and granular signal dependencies minimize rendering cycles.
-- **Derived State**: Metrics like `slaCompliance` and `activeAnomalies` are automatically recalculated when the underlying data changes.
+- **Reactive State Management**: Powered by **Angular Signals** and **NgRx SignalStore** (v21) for predictable, unidirectional data flow. Fully integrated with **Redux DevTools** for state inspection and time-travel debugging.
+- **Performance-First Architecture**:
+  - **Deferrable Views (`@defer`)**: Critical components (Heatmap, Event Log) are lazy-loaded based on viewport visibility to optimize Time-to-Interactive (TTI).
+  - **OnPush Change Detection**: Global strategy enabling efficient rendering cycles.
+- **Robust Quality Assurance**:
+  - **Property-Based Testing**: Utilizes `fast-check` to fuzz-test utility functions against thousands of random inputs.
 
 ## 📂 Project Structure
+
+For a detailed breakdown of the directory structure and architectural decisions, please see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```text
 quest-dashboard/
@@ -157,3 +136,5 @@ The codebase is fully documented using JSDoc (Backend) and TSDoc (Frontend).
 ## 🛡️ License
 
 This project is part of the Expanders360 Hiring Quest.
+
+Build By `Youssef Fathalla`

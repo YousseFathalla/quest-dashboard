@@ -5,7 +5,7 @@
  */
 import express from "express";
 import cors from "cors";
-import statsRoutes from "./routes/snapshot.js";
+import statsRoutes from "./routes/stats.js";
 import streamRoute from "./routes/stream.js";
 import { seedInitialData } from "./simulation/generator.js";
 import { startSimulation } from "./simulation/engine.js";

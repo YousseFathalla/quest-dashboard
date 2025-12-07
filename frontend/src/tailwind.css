@@ -41,10 +41,3 @@
   --color-outline: var(--mat-sys-outline);
   --color-outline-variant: var(--mat-sys-outline-variant);
 }
-
-@layer components {
-  .skeleton-loader {
-    @apply overflow-hidden absolute inset-0 z-50 w-full h-full rounded-lg animate-pulse 
-    bg-(--mat-sys-surface-container);
-  }
-}

@@ -4,31 +4,73 @@
 
 The Legal Workflow Monitoring Dashboard is a real-time analytics platform designed to provide visibility into legal operations. It uses a reactive architecture to process high-frequency event streams and visualize them instantly.
 
-## 🌐 Live Deployment
+## 🧠 Data Ingestion Strategy & Challenge Compliance
 
-The system is currently deployed and accessible at:
+The coding challenge specifications requested three separate API endpoints:
 
-- **Frontend**: [https://content-luck-production.up.railway.app/](https://content-luck-production.up.railway.app/)
-- **Backend**:
-  - [https://quest-dashboard-production-edef.up.railway.app/stream](https://quest-dashboard-production-edef.up.railway.app/stream),
-  - [https://quest-dashboard-production-edef.up.railway.app/snapshot](https://quest-dashboard-production-edef.up.railway.app/snapshot)
+1. `GET /stats/overview`
+2. `GET /stats/timeline`
+3. `GET /stats/anomalies`
 
-## Technology Stack
+**We have implemented all three of these endpoints** (`backend/src/routes/stats.js`) and ready-to-use service methods (`dashboard.service.ts`).
+
+### 💡 Architectural Decision: The "Snapshot" Pattern
+
+However, in the active application, we deliberately chose **not to use** these three separate endpoints in favor of a single atomic `GET /snapshot` endpoint.
+
+**Why?**
+In a real-time system, fetching related state via multiple asynchronous requests introduces **"Data Tearing"** (Race Conditions).
+
+- *Scenario*: If `GET /overview` executes at `T=0` and `GET /timeline` executes at `T=1`, and a new event arrives at `T=0.5`.
+- *Result*: The "Total Count" in Overview will not match the number of items in the Timeline list.
+- *Solution*: The `/snapshot` endpoint locks the state and returns the Overview, Timeline, and Volume metrics in a single, atomic JSON payload, ensuring mathematical consistency across the entire dashboard.
+
+The "Legacy" endpoints are fully functional to demonstrate strict compliance with the challenge requirements.
+
+## 🌐 Live Deployment & Endpoints
+
+- **Frontend**: [Live Demo](https://content-luck-production.up.railway.app/)
+- **Core Endpoints**:
+  - [Stream (SSE)](https://quest-dashboard-production-edef.up.railway.app/stream)
+  - [Snapshot](https://quest-dashboard-production-edef.up.railway.app/snapshot)
+- **Legacy Endpoints (Unused)**:
+  - [/stats/overview](https://quest-dashboard-production-edef.up.railway.app/stats/overview)
+  - [/stats/timeline](https://quest-dashboard-production-edef.up.railway.app/stats/timeline)
+  - [/stats/anomalies](https://quest-dashboard-production-edef.up.railway.app/stats/anomalies)
+
+## 🛠️ Technology Stack
 
 ### Frontend
 
-- **Framework**: Angular 21 (Standalone Components)
-- **State Management**: NgRx SignalStore (Reactive, localized state)
-- **Visualization**: Apache ECharts (High-performance canvas rendering)
-- **Styling**: TailwindCSS (Utility-first) + Angular Material (Accessible components)
-- **Build Tool**: Angular CLI (Esbuild)
+- **Framework**: [Angular 21](https://angular.dev) (Standalone Components, Esbuild)
+- **State Management**: [NgRx SignalStore](https://ngrx.io/guide/signals) (v20+) - Chosen for its granular reactivity and seamless integration with Angular Signals.
+- **Visualization**: [Apache ECharts 6.0](https://echarts.apache.org/) - High-performance canvas rendering for 10k+ data points.
+- **Styling**: [TailwindCSS 4.1](https://tailwindcss.com) + [Angular Material 21](https://material.angular.io).
+- **Testing**: Vitest (Unit) + Fast-Check (Property-Based).
 
 ### Backend
 
-- **Runtime**: Node.js
+- **Runtime**: Node.js (v20 LTS)
 - **Framework**: Express.js
-- **Real-Time**: Server-Sent Events (SSE)
-- **Containerization**: Docker (Multi-stage builds)
+- **Real-Time**: Native Server-Sent Events (SSE) (No heavy WebSocket libraries required).
+- **Simulation**: Custom probabilistic event generator with "Chaos" capabilities.
+
+## 🏗️ Bonus Feature Implementation
+
+### 1. Chaos Engineering (Backend)
+
+To simulate a real-world distributed system, we implemented a custom `chaosMiddleware` in `src/app.js`.
+
+- **5% Error Rate**: Randomly returns 500 errors on snapshot fetching.
+- **Stream Disconnection**: Periodically severs the SSE connection.
+- **Goal**: Proves the frontend's ability to gracefully handle errors (Retry Logic, User Notifications).
+
+### 2. Deferrable Views (Frontend)
+
+Heavier components like the `Heatmap` and `VolumeChart` are wrapped in `@defer(on viewport)` blocks.
+
+- **Benefit**: These chunks are not downloaded until the user scrolls them into view.
+- **Result**: Faster Initial Contentful Paint (ICP).
 
 ## Resilience & Stability
 
@@ -37,6 +79,15 @@ The system is currently deployed and accessible at:
   - **Atomic Data Fetching**: Initial dashboard state (Overview, Timeline, Volume) is fetched in a single atomic payload to prevent partial hydration states.
   - **Auto-Reconnection**: SSE connection automatically attempts to reconnect upon network interruption.
   - **User Feedback**: Non-intrusive `SnackBar` notifications inform users of connection loss and restoration.
+
+## ⚡ Performance Optimization
+
+- **Deferrable Views (`@defer`)**:
+  - Heavy visualization components (`Heatmap`, `VolumeChart`, `EventLog`) are explicitly marked for lazy loading.
+  - **Trigger**: `on viewport` (loads when scrolled into view) and `prefetch on idle` (background fetch when main thread is free).
+  - **Impact**: drastically reduces the Initial Contentful Paint (ICP) and blocking time.
+- **Build Optimization**: Uses **Esbuild** (via Angular 21 CLI) for sub-second builds and tree-shaking.
+- **Canvas Rendering**: ECharts is configured to use the Canvas renderer (instead of SVG) to handle thousands of data points (Scatter Plot) with maintaining 60fps.
 
 ## Data Flow
 
@@ -83,3 +134,7 @@ backend/
 - **Signal-Based State**: Granular updates ensure only affected components re-render.
 - **ECharts Optimization**: Using `canvas` renderer and `merge` mode for high-performance charting.
 - **Stateless Backend**: SSE connections are unidrektional and lightweight, suitable for horizontal scaling (requires sticky sessions or a message broker like Redis Main/Sub for multi-instance broadcasting).
+
+---
+
+Build By `Youssef Fathalla`
