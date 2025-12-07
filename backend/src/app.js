@@ -5,7 +5,7 @@
  */
 import express from "express";
 import cors from "cors";
-import statsRoutes from "./routes/stats.js";
+import statsRoutes from "./routes/snapshot.js";
 import streamRoute from "./routes/stream.js";
 import { seedInitialData } from "./simulation/generator.js";
 import { startSimulation } from "./simulation/engine.js";
@@ -15,7 +15,7 @@ app.use(cors());
 
 /**
  * Middleware to simulate random backend failures (Chaos Engineering).
- * Introduces a 5% chance of returning a 500 error for /stats requests.
+ * Introduces a 5% chance of returning a 500 error for /snapshot requests.
  *
  * @param {import("express").Request} req - The Express request object.
  * @param {import("express").Response} res - The Express response object.
@@ -23,7 +23,7 @@ app.use(cors());
  * @returns {void|import("express").Response} Returns a 500 response if chaos strikes, otherwise calls next().
  */
 const chaosMiddleware = (req, res, next) => {
-  if (req.url.startsWith("/stats") && Math.random() < 0.05) {
+  if (req.url.startsWith("/snapshot") && Math.random() < 0.05) {
     console.log(`Simulated Backend Failure: ${req.url}`);
     return res.status(500).json({ error: "Simulated Backend Failure (Bonus Feature)" });
   }
@@ -37,7 +37,7 @@ seedInitialData();
 startSimulation();
 
 // Register routes
-app.use("/stats", statsRoutes);
+app.use("/", statsRoutes);
 app.use("/stream", streamRoute);
 
 /**

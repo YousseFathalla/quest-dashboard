@@ -61,31 +61,61 @@ export class TimeLine {
   // ✅ 5. Data Transformation (Aggregated by Hour for Stacked Bar)
   private readonly chartData = computed(() => {
     const events = this.store.visibleEvents();
+    const now = new Date();
 
-    // Initialize 24-hour buckets
-    const hours = Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i.toString().padStart(2, '0')}:00`,
-      completed: 0,
-      pending: 0,
-      anomaly: 0,
-    }));
+    // Initialize 24-hour buckets for the *past 24 hours*
+    // We want the most recent hour (currentHour) at the top (or bottom depending on sort), typically
+    // we show the range [currentHour - 23, currentHour].
+    // Let's build them in chronological order: [current - 23, ..., current]
+    const boxes: { label: string; completed: number; pending: number; anomaly: number }[] = [];
 
-    // Aggregate events
+    for (let i = 23; i >= 0; i--) {
+        // Calculate the hour for this slot
+        const d = new Date(now);
+        d.setHours(d.getHours() - i);
+        const hour = d.getHours();
+        const label = `${hour.toString().padStart(2, '0')}:00`;
+
+        boxes.push({
+            label,
+            completed: 0,
+            pending: 0,
+            anomaly: 0
+        });
+    }
+
+    // A helper to find the correct index based on time difference
+    // This assumes events are recent (within last 24h usually).
+    // If an event is older than 24h, it will be skipped with this logic.
+    const oneHourMs = 3600 * 1000;
+    const endTime = now.getTime();
+
     events.forEach(e => {
-      const date = new Date(e.timestamp);
-      const hour = date.getHours();
-      if (hour >= 0 && hour < 24) {
-        if (e.type === 'completed') hours[hour].completed++;
-        else if (e.type === 'pending') hours[hour].pending++;
-        else if (e.type === 'anomaly') hours[hour].anomaly++;
-      }
+       const diff = endTime - e.timestamp;
+       // We have 24 buckets: index 0 is oldest (23h ago), index 23 is newest (0h ago).
+       // diff is how ms ago it was.
+       // hoursAgo = Math.floor(diff / oneHourMs).
+       // if hoursAgo is 0 => it goes to index 23.
+       // if hoursAgo is 23 => it goes to index 0.
+
+       if (diff >= 0) {
+           const hoursAgo = Math.floor(diff / oneHourMs);
+           if (hoursAgo >= 0 && hoursAgo < 24) {
+               const index = 23 - hoursAgo;
+               if (index >= 0 && index < 24) {
+                    if (e.type === 'completed') boxes[index].completed++;
+                    else if (e.type === 'pending') boxes[index].pending++;
+                    else if (e.type === 'anomaly') boxes[index].anomaly++;
+               }
+           }
+       }
     });
 
     return {
-      categories: hours.map(h => h.hour),
-      completed: hours.map(h => h.completed),
-      pending: hours.map(h => h.pending),
-      anomaly: hours.map(h => h.anomaly),
+      categories: boxes.map(b => b.label),
+      completed: boxes.map(b => b.completed),
+      pending: boxes.map(b => b.pending),
+      anomaly: boxes.map(b => b.anomaly),
     };
   });
 

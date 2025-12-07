@@ -7,19 +7,35 @@
     <app-workflow-header />
 
     <mat-divider class="my-6!" />
-
     <app-stats-cards />
-    <mat-divider class="my-6!" />
 
+    <mat-divider class="my-6!" />
     <app-time-line />
-    <mat-divider class="my-6!" />
 
+    @defer(on viewport; prefetch on idle) {
+    <mat-divider class="my-6!" />
     <app-event-log />
-    <mat-divider class="my-6!" />
+    } @placeholder {
+    <div class="flex items-center justify-center min-h-[300px]">
+      <mat-spinner diameter="100"></mat-spinner>
+    </div>
+    }
 
+    <mat-divider class="my-6!" />
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      @defer(on viewport; prefetch on idle) {
       <app-heat-map />
+      } @placeholder {
+      <div class="flex items-center justify-center min-h-[300px]">
+        <mat-spinner diameter="100"></mat-spinner>
+      </div>
+      } @defer(on viewport; prefetch on idle) {
       <app-volume-chart />
+      } @placeholder {
+      <div class="flex items-center justify-center min-h-[300px]">
+        <mat-spinner diameter="100"></mat-spinner>
+      </div>
+      }
     </div>
     <mat-divider class="my-6!" />
   </div>

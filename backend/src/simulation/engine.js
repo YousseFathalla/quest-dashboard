@@ -44,7 +44,7 @@ function generateEvent() {
  * @returns {void}
  */
 export function startSimulation() {
-  console.log("🚀 Simulation Engine Started...");
+  console.log("Simulation Engine Started...");
 
   /**
    * recursive loop function.

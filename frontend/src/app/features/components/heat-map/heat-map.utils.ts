@@ -30,21 +30,21 @@ export function generateTimeSlots(): TimeSlot[] {
   const endOfCurrentWindow = now.getTime();
 
   const slots: TimeSlot[] = [];
-  const slotDuration = 4 * 60 * 60 * 1000; // 4 hours in ms
+  const slotDuration = 1 * 60 * 60 * 1000; // 1 hour in ms
 
-  // Generate 6 slots going back 24 hours from the aligned end time
-  for (let i = 5; i >= 0; i--) {
+  // Generate 24 slots going back 24 hours from the aligned end time
+  for (let i = 23; i >= 0; i--) {
     const endTime = endOfCurrentWindow - i * slotDuration;
     const startTime = endTime - slotDuration;
 
     const startDate = new Date(startTime);
-    const endDate = new Date(endTime);
+    // const endDate = new Date(endTime);
 
     const formatTime = (d: Date) =>
       `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 
     slots.push({
-      label: `${formatTime(startDate)}-${formatTime(endDate)}`,
+      label: formatTime(startDate), // Just show start time e.g. "14:00"
       startTime,
       endTime,
     });

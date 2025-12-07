@@ -100,7 +100,12 @@ export class VolumeChart {
     xAxis: {
       type: 'category',
       data: [],
-      axisLabel: { color: '#94a3b8' },
+      axisLabel: {
+        color: '#94a3b8',
+        rotate: 45,
+        fontSize: 10,
+        interval: 0, // Force show all labels
+      },
     },
     yAxis: [
       { type: 'value', name: 'Volume', position: 'left', splitLine: { show: false } },

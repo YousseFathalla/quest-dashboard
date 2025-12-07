@@ -1,4 +1,4 @@
-<section class="h-full relative min-h-[600px]">
+<section class="h-full">
   @if (store.loading()) {
   <app-skeleton-loader />
   }
@@ -9,10 +9,10 @@
           Hourly Event Distribution
         </mat-card-title>
         <mat-card-subtitle class="mat-font-body-lg">
-          Events aggregated by hour (24h)
+          Events aggregated by hour (Past 24h)
         </mat-card-subtitle>
 
-        <div class="timeline-actions">
+        <div>
           <mat-chip-listbox
             [value]="store.filter()"
             (change)="onFilterChange($event.value)"
@@ -27,8 +27,8 @@
         </div>
       </mat-card-header>
 
-      <mat-card-content class="grow relative">
-        <div echarts [options]="chartOption()" class="w-full h-full"></div>
+      <mat-card-content>
+        <div echarts [options]="chartOption()" class="w-full h-[650px]"></div>
       </mat-card-content>
     </mat-card>
   </article>

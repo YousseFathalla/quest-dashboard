@@ -80,7 +80,7 @@ describe('Debounce Property Tests', () => {
           expect(updater.getUpdateCount()).toBe(1);
 
           // The last value should be used
-          expect(updater.getLastValue()).toBe(values[values.length - 1]);
+          expect(updater.getLastValue()).toBe(values.at(-1));
 
           updater.cleanup();
         }

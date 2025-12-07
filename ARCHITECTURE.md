@@ -4,6 +4,15 @@
 
 The Legal Workflow Monitoring Dashboard is a real-time analytics platform designed to provide visibility into legal operations. It uses a reactive architecture to process high-frequency event streams and visualize them instantly.
 
+## 🌐 Live Deployment
+
+The system is currently deployed and accessible at:
+
+- **Frontend**: [https://content-luck-production.up.railway.app/](https://content-luck-production.up.railway.app/)
+- **Backend**:
+  - [https://quest-dashboard-production-edef.up.railway.app/stream](https://quest-dashboard-production-edef.up.railway.app/stream),
+  - [https://quest-dashboard-production-edef.up.railway.app/snapshot](https://quest-dashboard-production-edef.up.railway.app/snapshot)
+
 ## Technology Stack
 
 ### Frontend
@@ -48,24 +57,25 @@ The Legal Workflow Monitoring Dashboard is a real-time analytics platform design
 
 ## Directory Structure
 
+```text
 frontend/
 ├── src/
 │   ├── app/
-│   │   ├── core/
-│   │   │   ├── models/           # TypeScript Interfaces (LogEvent, OverviewStats)
-│   │   │   ├── services/         # API & SSE Services (DashboardService, ConnectionService)
-│   │   │   └── store/            # SignalStore Definitions (DashboardStore)
-│   │   ├── features/
-│   │   │   └── dashboard/
-│   │   │       ├── components/   # Smart/Presentation Components (Heatmap, Timeline, etc.)
-│   │   │       └── utils/        # Shared Utilities (e.g., heatmap.utils.ts)
-│   │   └── app.ts                # Root Component (Orchestrator)
+│   │   ├── core/           # Core Services, Interceptors & Constants
+│   │   ├── features/       # Feature Components (Charts, Logs, Dialogs)
+│   │   ├── layout/         # Layout Components (Header)
+│   │   ├── models/         # TypeScript Interfaces
+│   │   ├── shared/         # Reusable UI & Utilities
+│   │   ├── store/          # Global State (SignalStore)
+│   │   └── app.ts          # Root Component
 backend/
 ├── src/
-│   ├── routes/                   # Express Routes (stats, stream)
-│   ├── simulation/               # Event Generation Logic
-│   └── app.js                    # Express App Setup & Chaos Middleware
-└── server.js                     # Server Entry Point
+│   ├── routes/             # Express Routes (snapshot, stream)
+│   ├── simulation/         # Event Generation Logic
+│   ├── utils/              # Helper Utilities
+│   ├── app.js              # Express App Setup & Chaos Middleware
+│   └── server.js           # Server Entry Point
+```
 
 ## Scalability Considerations
 

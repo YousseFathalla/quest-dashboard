@@ -11,17 +11,11 @@ import { connectSSE } from '@core/tools/sse-stream';
 export class DashboardService {
   private readonly http = inject(HttpClient);
 
-  getStats(): Observable<OverviewStats> {
-    return this.http.get<OverviewStats>(`${env.baseUrl}/stats/overview`);
-  }
 
-  getTimelineHistory(): Observable<LogEvent[]> {
-    return this.http.get<LogEvent[]>(`${env.baseUrl}/stats/timeline`);
-  }
 
   getSnapshot(): Observable<{ overview: OverviewStats; events: LogEvent[] }> {
     return this.http.get<{ overview: OverviewStats; events: LogEvent[] }>(
-      `${env.baseUrl}/stats/snapshot`
+      `${env.baseUrl}/snapshot`
     );
   }
 

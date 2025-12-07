@@ -56,17 +56,17 @@ export function seedInitialData() {
 
 /**
  * Returns a random event type based on weighted probabilities.
- * - 70% 'completed'
+ * - 60% 'completed'
  * - 20% 'pending'
- * - 10% 'anomaly'
+ * - 20% 'anomaly'
  *
  * @returns {string} The event type.
  */
 export function randomType() {
   const r = Math.random();
-  if (r < 0.7) return "completed"; // 70%
-  if (r < 0.9) return "pending"; // 20%
-  return "anomaly"; // 10%
+  if (r < 0.6) return "completed"; // 60%
+  if (r < 0.8) return "pending"; // 20%
+  return "anomaly"; // 20%
 }
 
 /**
