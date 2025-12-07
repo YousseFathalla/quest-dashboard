@@ -17,7 +17,7 @@
     <mat-divider class="my-6!" />
 
     <!-- Event Log -->
-    @defer(on timer(4000ms); prefetch on idle) {
+    @defer(on viewport; prefetch on idle) {
     <app-event-log />
     } @placeholder {
     <div class="flex relative justify-center items-center min-h-[350px] w-full h-full">
@@ -28,7 +28,7 @@
 
     <!-- Heat Map & Volume Chart -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      @defer(on timer(4000ms); prefetch on idle) {
+      @defer(on viewport; prefetch on idle) {
       <!-- Heat Map -->
       <app-heat-map />
       } @placeholder {
@@ -37,7 +37,7 @@
       </div>
       }
       <!-- Volume Chart -->
-      @defer(on timer(4000ms); prefetch on idle) {
+      @defer(on viewport; prefetch on idle) {
       <app-volume-chart />
       } @placeholder {
       <div class="flex relative justify-center items-center min-h-[450px] w-full h-full">

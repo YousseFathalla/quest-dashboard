@@ -67,9 +67,12 @@ For a detailed breakdown of the directory structure and architectural decisions,
 quest-dashboard/
 ├── backend/                # Node.js API & Simulation Engine
 │   ├── src/
+│   │   ├── data/           # Store Data
 │   │   ├── simulation/     # Data generation logic
 │   │   ├── routes/         # API endpoints
 │   │   └── utils/          # Stream management
+│   └── app.js              # Main Application
+│   └── server.js           # Main Server
 ├── frontend/               # Angular Application
 │   ├── src/app/
 │   │   ├── core/           # Services, Interceptors
