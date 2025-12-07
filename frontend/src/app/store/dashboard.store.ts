@@ -13,7 +13,7 @@ import {
 } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { computed, inject } from '@angular/core';
-import { tap, switchMap, take, retry, catchError, delay } from 'rxjs/operators';
+import { tap, switchMap, take, retry, catchError } from 'rxjs/operators';
 import { EMPTY, of, pipe, timer } from 'rxjs';
 import { DashboardFilter, ConnectionState } from '@models/dashboard.types';
 import { calculateStateFromEvent } from './dashboard-helper';
@@ -75,7 +75,7 @@ export const DashboardStore = signalStore(
         tap(() => patchState(store, { loading: true, error: null })),
         switchMap(() =>
           dashboardService.getSnapshot().pipe(
-            // delay(2000), // Keep the user-requested delay
+            // delay(2000), // Keep the user-requested delayed response
             tap(({ overview, events }) => {
               patchState(store, {
                 stats: overview,
@@ -85,7 +85,7 @@ export const DashboardStore = signalStore(
             }),
             retry({
               count: 3, // Reduced retry count for faster feedback
-              delay: (error, retryCount) => {
+              delay: (_, retryCount) => {
                 // Only keep loading state true, don't flicker false
                 return timer(1000 * retryCount).pipe(take(1));
               },

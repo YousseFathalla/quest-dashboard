@@ -111,7 +111,7 @@ quest-dashboard/
 Run the entire stack with a single command:
 
 ```bash
-docker-compose up --build
+docker-compose -f docker-compose.dev.yml up --build
 ```
 
 Access the dashboard at **http://localhost**.
