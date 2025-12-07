@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { Header } from '@layout/header/header';
+import { Footer } from '@layout/footer/footer';
 import { EventLog } from '@features/components/event-log/event-log';
 import { StatsCards } from '@features/components/stats-cards/stats-cards';
 import { TimeLine } from '@features/components/time-line/time-line';
@@ -23,7 +24,8 @@ import { SkeletonLoader } from "@shared/components/skeleton-loader/skeleton-load
     HeatMap,
     VolumeChart,
     MatProgressSpinnerModule,
-    SkeletonLoader
+    SkeletonLoader,
+    Footer
 ],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
