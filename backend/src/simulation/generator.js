@@ -26,7 +26,7 @@ export function seedInitialData() {
   // Live: ~1 event every 15s = 4/min = 240/hour
   // 24 hours * 240 events = 5760 events. 
   // We'll use 500 as requested.
-  const INITIAL_COUNT = 200; 
+  const INITIAL_COUNT = 2000;
 
   for (let i = 0; i < INITIAL_COUNT; i++) {
     const ts = now - Math.random() * 24 * 60 * 60 * 1000;

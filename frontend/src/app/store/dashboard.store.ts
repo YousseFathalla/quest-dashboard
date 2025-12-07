@@ -79,7 +79,8 @@ export const DashboardStore = signalStore(
             tap(({ overview, events }) => {
               patchState(store, {
                 stats: overview,
-                events: events,
+                // Sort events descending (Newest first) so prepend logic in helper works correctly
+                events: [...events].sort((a, b) => b.timestamp - a.timestamp),
                 loading: false,
               });
             }),

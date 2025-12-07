@@ -63,52 +63,39 @@ export class TimeLine {
     const events = this.store.visibleEvents();
     const now = new Date();
 
-    // Initialize 24-hour buckets for the *past 24 hours*
-    // We want the most recent hour (currentHour) at the top (or bottom depending on sort), typically
-    // we show the range [currentHour - 23, currentHour].
-    // Let's build them in chronological order: [current - 23, ..., current]
+    // Anchor to the start of the current hour to ensure stable buckets
+    // This removes 'minute' drift and ensures we always bucket by [HH:00 - HH:59]
+    const anchor = new Date(now);
+    anchor.setMinutes(0, 0, 0);
+
+    const mp = new Map<number, number>(); // timestamp (start of hour) -> index in boxes
     const boxes: { label: string; completed: number; pending: number; anomaly: number }[] = [];
 
+    // Build 24 buckets: [Current-23h, ... , Current]
+    // We iterate backwards from 23 down to 0 so the array is chronological
     for (let i = 23; i >= 0; i--) {
-        // Calculate the hour for this slot
-        const d = new Date(now);
-        d.setHours(d.getHours() - i);
-        const hour = d.getHours();
-        const label = `${hour.toString().padStart(2, '0')}:00`;
+        const d = new Date(anchor.getTime() - i * 60 * 60 * 1000);
+        const label = `${d.getHours().toString().padStart(2, '0')}:00`;
 
-        boxes.push({
-            label,
-            completed: 0,
-            pending: 0,
-            anomaly: 0
-        });
+        boxes.push({ label, completed: 0, pending: 0, anomaly: 0 });
+        // Map the exact timestamp of the hour start to the array index
+        mp.set(d.getTime(), boxes.length - 1);
     }
 
-    // A helper to find the correct index based on time difference
-    // This assumes events are recent (within last 24h usually).
-    // If an event is older than 24h, it will be skipped with this logic.
-    const oneHourMs = 3600 * 1000;
-    const endTime = now.getTime();
-
     events.forEach(e => {
-       const diff = endTime - e.timestamp;
-       // We have 24 buckets: index 0 is oldest (23h ago), index 23 is newest (0h ago).
-       // diff is how ms ago it was.
-       // hoursAgo = Math.floor(diff / oneHourMs).
-       // if hoursAgo is 0 => it goes to index 23.
-       // if hoursAgo is 23 => it goes to index 0.
+        // Floor the event time to its hour start
+        const d = new Date(e.timestamp);
+        d.setMinutes(0, 0, 0);
+        const key = d.getTime();
 
-       if (diff >= 0) {
-           const hoursAgo = Math.floor(diff / oneHourMs);
-           if (hoursAgo >= 0 && hoursAgo < 24) {
-               const index = 23 - hoursAgo;
-               if (index >= 0 && index < 24) {
-                    if (e.type === 'completed') boxes[index].completed++;
-                    else if (e.type === 'pending') boxes[index].pending++;
-                    else if (e.type === 'anomaly') boxes[index].anomaly++;
-               }
-           }
-       }
+        // only count if it matches one of our active buckets
+        const idx = mp.get(key);
+        if (idx !== undefined) {
+             const box = boxes[idx];
+             if (e.type === 'completed') box.completed++;
+             else if (e.type === 'pending') box.pending++;
+             else if (e.type === 'anomaly') box.anomaly++;
+        }
     });
 
     return {
@@ -194,4 +181,3 @@ export class TimeLine {
     };
   });
 }
-

@@ -13,7 +13,6 @@ import { MatDivider } from '@angular/material/divider';
 import { WorkflowHeader } from '@features/components/workflow-header/workflow-header';
 import { HeatMap } from '@features/components/heat-map/heat-map';
 import { VolumeChart } from '@features/components/volume-chart/volume-chart';
-import { SkeletonLoader } from "@shared/components/skeleton-loader/skeleton-loader";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
@@ -27,7 +26,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     WorkflowHeader,
     HeatMap,
     VolumeChart,
-    SkeletonLoader,
     MatProgressSpinnerModule,
   ],
   templateUrl: './app.html',
