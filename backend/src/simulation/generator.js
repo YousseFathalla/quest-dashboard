@@ -1,7 +1,3 @@
-/**
- * @fileoverview Generators for initial data seeding and random value creation.
- */
-
 import { store } from "../data/store.js";
 import { computeOverview } from "./metrics.js";
 
@@ -22,10 +18,9 @@ export function updateMetrics() {
 export function seedInitialData() {
   const now = Date.now();
 
-  // Calculate the number of events to match the approximate live generation rate
-  // Live: ~1 event every 15s = 4/min = 240/hour
-  // 24 hours * 240 events = 5760 events. 
-  // We'll use 500 as requested.
+  // figure out how many events we need to match the live generation rate
+  // targeting roughly 1 event every 15s -> ~240/hour
+  // capped at 2000 for initial load performance
   const INITIAL_COUNT = 2000;
 
   for (let i = 0; i < INITIAL_COUNT; i++) {
@@ -44,9 +39,8 @@ export function seedInitialData() {
     if (type === "anomaly") store.anomalies.push(event);
   }
 
-  // SORTING IS CRITICAL:
-  // Since we generated random timestamps in the loop, the array is NOT Chronological.
-  // This causes issues when we slice(-200) later (we get random events, not the latest).
+  // need to sort these because the random timestamp generation above 
+  // doesn't guarantee chronological order, which breaks the slicing logic later
   store.events.sort((a, b) => a.timestamp - b.timestamp);
   store.anomalies.sort((a, b) => a.timestamp - b.timestamp);
 

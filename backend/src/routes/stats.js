@@ -1,8 +1,3 @@
-/**
- * @fileoverview Express router for retrieving statistical data.
- * Provides endpoints for overview, timeline, anomalies, and volume data.
- */
-
 import { Router } from "express";
 import { store } from "../data/store.js";
 

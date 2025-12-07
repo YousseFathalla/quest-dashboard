@@ -1,9 +1,3 @@
-/**
- * @fileoverview Heatmap visualization component for anomaly detection.
- * Displays a heatmap of anomalies aggregated by time slots and severity levels.
- * Allows users to click on cells to view detailed anomaly lists.
- */
-
 import {
   Component,
   effect,
@@ -20,7 +14,6 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
-import { LogEvent } from '@models/dashboard.types';
 import type { EChartsOption } from 'echarts';
 import {
   HeatmapDetailsDialog,
@@ -28,11 +21,11 @@ import {
 } from '@features/dialogs/heatmap-details-dialog/heatmap-details-dialog';
 import {
   SEVERITY_LABELS,
-  SEVERITY_LEVELS,
   generateTimeSlots,
   formatTooltip,
   processAnomalyEvents,
   TimeSlot,
+  getHeatmapCellData,
 } from '@shared/utilities/heat-map.utils';
 import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
@@ -179,34 +172,17 @@ export class HeatMap {
    * @param {unknown} params - The ECharts event parameters.
    */
   private handleCellClick(params: unknown): void {
-    const p = params as { data?: { value?: [number, number, number, number, string] } };
-    if (!p.data?.value) return;
+    const result = getHeatmapCellData(params, this.currentTimeSlots, this.store.events());
 
-    const [xIndex, yIndex] = p.data.value;
-    const severity = SEVERITY_LEVELS[yIndex];
-
-    // Use the dynamic time slots
-    const slot = this.currentTimeSlots[xIndex];
-    if (!slot) return;
-
-    // Filter anomalies by time slot and severity
-    const filteredEvents = this.store.events().filter((event: LogEvent) => {
-      if (event.type !== 'anomaly') return false;
-      const matchesTimeSlot = event.timestamp >= slot.startTime && event.timestamp < slot.endTime;
-      const eventSeverity = typeof event.severity === 'number' ? event.severity : 1;
-      const matchesSeverity = eventSeverity === severity;
-      return matchesTimeSlot && matchesSeverity;
-    });
-
-    if (filteredEvents.length === 0) return;
+    if (!result) return;
 
     this.dialog.open<HeatmapDetailsDialog, HeatmapDetailsDialogData>(HeatmapDetailsDialog, {
       width: '800px',
       maxWidth: '90vw',
       data: {
-        timeSlot: slot.label,
+        timeSlot: result.slot.label,
         eventType: 'anomaly',
-        events: filteredEvents,
+        events: result.filteredEvents,
       },
     });
   }

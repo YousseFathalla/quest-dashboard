@@ -20,7 +20,7 @@ export interface TimeSlot {
 }
 
 /**
- * Generates 6 dynamic 4-hour time slots covering the past 24 hours.
+ * Generates 24 dynamic 1-hour time slots covering the past 24 hours.
  */
 export function generateTimeSlots(): TimeSlot[] {
   const now = new Date();
@@ -38,7 +38,6 @@ export function generateTimeSlots(): TimeSlot[] {
     const startTime = endTime - slotDuration;
 
     const startDate = new Date(startTime);
-    // const endDate = new Date(endTime);
 
     const formatTime = (d: Date) =>
       `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -108,6 +107,7 @@ export function processAnomalyEvents(events: LogEvent[], timeSlots: TimeSlot[]) 
     buckets.set(key, bucket);
   });
 
+
   const heatmapData = Array.from(buckets.entries()).map(([key, bucket]) => {
     const [x, y] = key.split('-').map(Number);
     const severity = SEVERITY_LEVELS[y];
@@ -126,4 +126,38 @@ export function processAnomalyEvents(events: LogEvent[], timeSlots: TimeSlot[]) 
   });
 
   return heatmapData;
+}
+
+export interface HeatmapCellData {
+  slot: TimeSlot;
+  filteredEvents: LogEvent[];
+}
+
+export function getHeatmapCellData(
+  params: unknown,
+  timeSlots: TimeSlot[],
+  allEvents: LogEvent[]
+): HeatmapCellData | null {
+  const p = params as { data?: { value?: [number, number, number, number, string] } };
+  if (!p.data?.value) return null;
+
+  const [xIndex, yIndex] = p.data.value;
+  const severity = SEVERITY_LEVELS[yIndex];
+
+  // Use the dynamic time slots
+  const slot = timeSlots[xIndex];
+  if (!slot) return null;
+
+  // Filter anomalies by time slot and severity
+  const filteredEvents = allEvents.filter((event: LogEvent) => {
+    if (event.type !== 'anomaly') return false;
+    const matchesTimeSlot = event.timestamp >= slot.startTime && event.timestamp < slot.endTime;
+    const eventSeverity = typeof event.severity === 'number' ? event.severity : 1;
+    const matchesSeverity = eventSeverity === severity;
+    return matchesTimeSlot && matchesSeverity;
+  });
+
+  if (filteredEvents.length === 0) return null;
+
+  return { slot, filteredEvents };
 }

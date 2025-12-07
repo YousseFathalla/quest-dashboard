@@ -1,6 +1,6 @@
 import { DashboardState } from "@models/dashboard.types";
 
-
+// default state for the dashboard feature
 export const initialState: DashboardState = {
   events: [],
   stats: {

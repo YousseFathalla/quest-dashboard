@@ -4,39 +4,48 @@
 
 <main class="@container h-[calc(100dvh-64px)] overflow-auto custom-scrollbar">
   <div class="xl:px-[10cqw] px-[6cqw] py-[2cqw]">
+    <!-- Workflow Header -->
     <app-workflow-header />
-
     <mat-divider class="my-6!" />
+
+    <!-- Stats Cards -->
     <app-stats-cards />
-
     <mat-divider class="my-6!" />
+
+    <!-- Time Line -->
     <app-time-line />
-
-    @defer(on viewport; prefetch on idle) {
     <mat-divider class="my-6!" />
+
+    <!-- Event Log -->
+    @defer(on timer(4000ms); prefetch on idle) {
     <app-event-log />
     } @placeholder {
-    <div class="flex items-center justify-center min-h-[300px]">
-      <mat-spinner diameter="100"></mat-spinner>
+    <div class="flex relative justify-center items-center min-h-[350px] w-full h-full">
+      <app-skeleton-loader />
     </div>
     }
-
     <mat-divider class="my-6!" />
+
+    <!-- Heat Map & Volume Chart -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      @defer(on viewport; prefetch on idle) {
+      @defer(on timer(4000ms); prefetch on idle) {
+      <!-- Heat Map -->
       <app-heat-map />
       } @placeholder {
-      <div class="flex items-center justify-center min-h-[300px]">
-        <mat-spinner diameter="100"></mat-spinner>
+      <div class="flex relative justify-center items-center min-h-[450px] w-full h-full">
+        <app-skeleton-loader />
       </div>
-      } @defer(on viewport; prefetch on idle) {
+      }
+      <!-- Volume Chart -->
+      @defer(on timer(4000ms); prefetch on idle) {
       <app-volume-chart />
       } @placeholder {
-      <div class="flex items-center justify-center min-h-[300px]">
-        <mat-spinner diameter="100"></mat-spinner>
+      <div class="flex relative justify-center items-center min-h-[450px] w-full h-full">
+        <app-skeleton-loader />
       </div>
       }
     </div>
     <mat-divider class="my-6!" />
+
   </div>
 </main>

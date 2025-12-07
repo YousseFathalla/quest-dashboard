@@ -1,9 +1,3 @@
-/**
- * @fileoverview Volume Chart component.
- * Displays a bar/line combo chart showing total event volume and critical errors over time.
- * Supports filtering by 6h, 12h, and 24h time ranges.
- */
-
 import {
   Component,
   effect,

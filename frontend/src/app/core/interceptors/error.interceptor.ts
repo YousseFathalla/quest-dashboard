@@ -1,8 +1,3 @@
-/**
- * @fileoverview HTTP Interceptor for handling errors and connection status.
- * Intercepts all HTTP requests to provide global error handling and network status notifications.
- */
-
 import {
   HttpErrorResponse,
   HttpHandlerFn,
@@ -34,9 +29,7 @@ export const errorInterceptor: HttpInterceptorFn = (
         connectionService.showDisconnected();
       } else if (error.status >= 500) {
         // Server error - show user-friendly message
-        connectionService.showError(
-          'Server error occurred.   Retrying again...'
-        );
+        connectionService.showError('Server error occurred.   Retrying again...');
       }
 
       return throwError(() => error);

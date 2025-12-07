@@ -1,11 +1,6 @@
-/**
- * @fileoverview Application logger service.
- * Provides logging methods that only output to the console in development mode.
- */
-
 import { Injectable, isDevMode } from '@angular/core';
 
-@Injectable({ providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class LoggerService {
   /**
    * Logs an error message.

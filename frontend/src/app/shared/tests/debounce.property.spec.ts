@@ -89,9 +89,7 @@ describe('Debounce Property Tests', () => {
     );
   });
 
-  /**
-   * Test: Updates separated by more than debounce period trigger multiple updates
-   */
+  // Test: Updates separated by more than debounce period trigger multiple updates
   it('updates separated by debounce period trigger separate updates', () => {
     const DEBOUNCE_MS = 300;
     const updater = createDebouncedUpdater(DEBOUNCE_MS);
@@ -114,9 +112,7 @@ describe('Debounce Property Tests', () => {
     updater.cleanup();
   });
 
-  /**
-   * Test: Cleanup cancels pending updates
-   */
+  // Test: Cleanup cancels pending updates
   it('cleanup cancels pending debounced updates', () => {
     fc.assert(
       fc.property(fc.integer({ min: 1, max: 100 }), (value) => {
@@ -138,9 +134,7 @@ describe('Debounce Property Tests', () => {
     );
   });
 
-  /**
-   * Test: Debounce uses correct timing constant
-   */
+  // Test: Debounce uses correct timing constant
   it('debounce respects the configured delay', () => {
     const DEBOUNCE_MS = 300; // DASHBOARD_CONSTANTS.CHART_UPDATE_DEBOUNCE_MS
     const updater = createDebouncedUpdater(DEBOUNCE_MS);

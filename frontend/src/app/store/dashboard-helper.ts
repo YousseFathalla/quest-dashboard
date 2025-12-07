@@ -1,8 +1,3 @@
-/**
- * @fileoverview Helper functions for updating the Dashboard state.
- * Contains pure functions to calculate pure state based on incoming events.
- */
-
 import { DASHBOARD_CONSTANTS } from '@core/constants/dashboard.constants';
 import { DashboardState, LogEvent } from '@models/dashboard.types';
 

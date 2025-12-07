@@ -1,9 +1,4 @@
 /**
- * @fileoverview Type definitions for the Dashboard application.
- * Contains interfaces for events, statistics, store state, and chart data.
- */
-
-/**
  * Represents the type of a workflow event.
  */
 export type EventType = 'completed' | 'pending' | 'anomaly';
@@ -18,7 +13,6 @@ export type Severity = 'normal' | 'high' | number; // Backend sends numbers for 
  * Filter options for the dashboard events.
  */
 export type DashboardFilter = EventType | 'all';
-
 
 /**
  * Represents a single log event in the system.
@@ -88,7 +82,6 @@ export interface DashboardState {
   /** Error message if data loading fails. */
   error: string | null;
 }
-
 
 /**
  * Data point format for ECharts visualizations.

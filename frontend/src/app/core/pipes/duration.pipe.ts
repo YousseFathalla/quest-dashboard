@@ -1,10 +1,6 @@
-/**
- * @fileoverview Pipe for formatting duration in minutes into a readable string (e.g., "2h 30m").
- */
-
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({name: 'duration'})
+@Pipe({ name: 'duration' })
 export class DurationPipe implements PipeTransform {
   /**
    * Transforms a number of minutes into a human-readable string.
@@ -18,9 +14,7 @@ export class DurationPipe implements PipeTransform {
     const h = Math.floor(minutes / 60);
     const m = Math.floor(minutes % 60);
 
-    if (h === 0) {
-      return `${m}m`;
-    }
+    if (h === 0) return `${m}m`;
 
     return `${h}h ${m}m`;
   }

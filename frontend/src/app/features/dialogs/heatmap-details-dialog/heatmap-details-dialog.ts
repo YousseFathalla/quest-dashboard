@@ -1,8 +1,3 @@
-/**
- * @fileoverview Dialog component for displaying heatmap details.
- * Shows a list of anomalies for a specific time slot and severity.
- */
-
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';

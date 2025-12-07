@@ -1,10 +1,4 @@
 /**
- * @fileoverview Utility functions for computing metrics and statistics from the data store.
- */
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-/**
  * Computes overview statistics such as SLA compliance, cycle time, and anomaly counts.
  *
  * @param {Object} store - The data store containing events and anomalies.
@@ -17,7 +11,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 export function computeOverview(store) {
   const events = store.events || [];
   const anomalies = store.anomalies || [];
-  // Dynamic SLA: Use last 50 events so it fluctuates visibly
+  // use the last 200 events for dynamic SLA calculation to show fluctuations
   const recentEvents = events.slice(-200);
   const recentAnomalies = recentEvents.filter((e) => e.type === "anomaly").length;
   const recentNonAnomalies = recentEvents.length - recentAnomalies;
@@ -25,7 +19,7 @@ export function computeOverview(store) {
   // Raw compliance (~85% based on generator)
   const slaCompliance = recentEvents.length === 0 ? 100 : Math.round((recentNonAnomalies / recentEvents.length) * 100);
 
-  // Boost by 10% to hit the 90-100% "healthy" range user wants, but keep the fluctuation
+  // bump this up to the 90-100% range but keep the noise
   // const slaCompliance = Math.min(100, Math.round(rawSla + 10));
 
   // Calculate cycle time
@@ -35,11 +29,11 @@ export function computeOverview(store) {
       ? Math.round(completedEvents.reduce((sum, e) => sum + e.cycleTime, 0) / completedEvents.length)
       : 0;
 
-  // FIX: Count all events in the store as "Total Workflows" (since store is 24h window)
+  // count entire day's volume since store is a 24h rolling window
   const totalWorkflowsToday = events.length;
 
-  // FIX: Widen "Active" window to 15 minutes so we see more anomalies
-  // FIX: Count all anomalies (Total Anomalies) to match the list and frontend logic
+  // using a wider window to catch more anomalies
+  // matching the total anomalies count with the list view
   const activeAnomalies = anomalies.length;
 
   return {

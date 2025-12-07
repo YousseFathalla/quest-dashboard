@@ -1,8 +1,3 @@
-/**
- * @fileoverview Service for managing the application theme and palette.
- * Supports light/dark modes and multiple color palettes. Persists selection to localStorage.
- */
-
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { LoggerService } from '@shared/services/logger/logger.service';
@@ -19,9 +14,9 @@ export interface ThemeOption {
   secondaryColor: string;
 }
 
-@Injectable({ providedIn: "root" })
+@Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private static readonly THEME_STORAGE_KEY = "app-theme";
+  private static readonly THEME_STORAGE_KEY = 'app-theme';
   private readonly document = inject(DOCUMENT);
   private readonly logger = inject(LoggerService);
 
@@ -30,41 +25,41 @@ export class ThemeService {
    */
   readonly themes: ThemeOption[] = [
     {
-      id: "azure",
-      name: "Azure",
-      palette: "azure",
-      variant: "light",
-      primaryColor: "#0e5db9",
-      secondaryColor: "#0e5db9",
+      id: 'azure',
+      name: 'Azure',
+      palette: 'azure',
+      variant: 'light',
+      primaryColor: '#0e5db9',
+      secondaryColor: '#0e5db9',
     },
     {
-      id: "orange",
-      name: "Orange",
-      palette: "orange",
-      variant: "light",
-      primaryColor: "#95480e",
-      secondaryColor: "#95480e",
+      id: 'orange',
+      name: 'Orange',
+      palette: 'orange',
+      variant: 'light',
+      primaryColor: '#95480e',
+      secondaryColor: '#95480e',
     },
     {
-      id: "cyan",
-      name: "Cyan",
-      palette: "cyan",
-      variant: "dark",
-      primaryColor: "#1edddc",
-      secondaryColor: "#1edddc",
+      id: 'cyan',
+      name: 'Cyan',
+      palette: 'cyan',
+      variant: 'dark',
+      primaryColor: '#1edddc',
+      secondaryColor: '#1edddc',
     },
     {
-      id: "magenta",
-      name: "Magenta",
-      palette: "magenta",
-      variant: "dark",
-      primaryColor: "#feabf2",
-      secondaryColor: "#feabf2",
+      id: 'magenta',
+      name: 'Magenta',
+      palette: 'magenta',
+      variant: 'dark',
+      primaryColor: '#feabf2',
+      secondaryColor: '#feabf2',
     },
   ];
 
   /** Signal holding the current theme ID. */
-  readonly currentTheme = signal<ThemePalette>("azure");
+  readonly currentTheme = signal<ThemePalette>('azure');
 
   /** Computed property representing the currently selected theme option object. */
   readonly currentThemeOption = computed(() => {
@@ -72,7 +67,7 @@ export class ThemeService {
   });
 
   /** Computed boolean indicating if the current theme is a dark variant. */
-  readonly isDark = computed(() => this.currentThemeOption().variant === "dark");
+  readonly isDark = computed(() => this.currentThemeOption().variant === 'dark');
 
   constructor() {
     // Initialize theme from localStorage before setting up the effect
@@ -83,14 +78,14 @@ export class ThemeService {
       const theme = this.currentThemeOption();
       const el = this.document.documentElement;
 
-      el.dataset["theme"] = theme.variant;
-      el.dataset["palette"] = theme.palette;
+      el.dataset['theme'] = theme.variant;
+      el.dataset['palette'] = theme.palette;
       el.style.colorScheme = theme.variant;
 
       try {
         localStorage.setItem(ThemeService.THEME_STORAGE_KEY, theme.id);
       } catch (error: unknown) {
-        this.logger.warn("Could not persist theme to localStorage", error);
+        this.logger.warn('Could not persist theme to localStorage', error);
       }
     });
   }
@@ -106,7 +101,7 @@ export class ThemeService {
         this.currentTheme.set(saved as ThemePalette);
       }
     } catch (error: unknown) {
-      this.logger.warn("Could not read theme from localStorage", error);
+      this.logger.warn('Could not read theme from localStorage', error);
     }
   }
 

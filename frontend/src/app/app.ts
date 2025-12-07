@@ -1,8 +1,3 @@
-/**
- * @fileoverview Main Application Component.
- * Orchestrates the layout of dashboard widgets including Stats Cards, Timeline, Heatmap, Volume Chart, and Event Log.
- */
-
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DashboardStore } from 'app/store/dashboard.store';
 import { Header } from '@layout/header/header';
@@ -14,6 +9,7 @@ import { WorkflowHeader } from '@features/components/workflow-header/workflow-he
 import { HeatMap } from '@features/components/heat-map/heat-map';
 import { VolumeChart } from '@features/components/volume-chart/volume-chart';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { SkeletonLoader } from "@shared/components/skeleton-loader/skeleton-loader";
 
 @Component({
   selector: 'app-root',
@@ -27,11 +23,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     HeatMap,
     VolumeChart,
     MatProgressSpinnerModule,
-  ],
+    SkeletonLoader
+],
   templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  /** The global dashboard store instance. */
+  // The global dashboard store instance.
   readonly store = inject(DashboardStore);
 }

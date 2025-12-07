@@ -1,15 +1,4 @@
-/**
- * @fileoverview Timeline visualization component.
- * Displays a scatter plot of events over time, allowing filtering by event type.
- */
-
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import {
   MatCard,
@@ -40,14 +29,14 @@ import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-load
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimeLine {
-  // ✅ 1. Inject Store
+  // Inject Store
   readonly store = inject(DashboardStore);
 
-  // ✅ 2. Define Filters (Matches Store Types)
+  // Define Filters (Matches Store Types)
   /** Available filters for the timeline. */
   readonly filters = signal<DashboardFilter[]>(['all', 'completed', 'pending', 'anomaly']);
 
-  // ✅ 4. Interaction (Delegates to Store)
+  // Interaction (Delegates to Store)
   /**
    * Handles filter changes. Toggles between specific filter and 'all'.
    * @param {DashboardFilter} filter - The selected filter.
@@ -57,8 +46,7 @@ export class TimeLine {
     this.store.setFilter(next);
   }
 
-
-  // ✅ 5. Data Transformation (Aggregated by Hour for Stacked Bar)
+  // Data Transformation (Aggregated by Hour for Stacked Bar)
   private readonly chartData = computed(() => {
     const events = this.store.visibleEvents();
     const now = new Date();
@@ -74,39 +62,39 @@ export class TimeLine {
     // Build 24 buckets: [Current-23h, ... , Current]
     // We iterate backwards from 23 down to 0 so the array is chronological
     for (let i = 23; i >= 0; i--) {
-        const d = new Date(anchor.getTime() - i * 60 * 60 * 1000);
-        const label = `${d.getHours().toString().padStart(2, '0')}:00`;
+      const d = new Date(anchor.getTime() - i * 60 * 60 * 1000);
+      const label = `${d.getHours().toString().padStart(2, '0')}:00`;
 
-        boxes.push({ label, completed: 0, pending: 0, anomaly: 0 });
-        // Map the exact timestamp of the hour start to the array index
-        mp.set(d.getTime(), boxes.length - 1);
+      boxes.push({ label, completed: 0, pending: 0, anomaly: 0 });
+      // Map the exact timestamp of the hour start to the array index
+      mp.set(d.getTime(), boxes.length - 1);
     }
 
-    events.forEach(e => {
-        // Floor the event time to its hour start
-        const d = new Date(e.timestamp);
-        d.setMinutes(0, 0, 0);
-        const key = d.getTime();
+    events.forEach((e) => {
+      // Floor the event time to its hour start
+      const d = new Date(e.timestamp);
+      d.setMinutes(0, 0, 0);
+      const key = d.getTime();
 
-        // only count if it matches one of our active buckets
-        const idx = mp.get(key);
-        if (idx !== undefined) {
-             const box = boxes[idx];
-             if (e.type === 'completed') box.completed++;
-             else if (e.type === 'pending') box.pending++;
-             else if (e.type === 'anomaly') box.anomaly++;
-        }
+      // only count if it matches one of our active buckets
+      const idx = mp.get(key);
+      if (idx !== undefined) {
+        const box = boxes[idx];
+        if (e.type === 'completed') box.completed++;
+        else if (e.type === 'pending') box.pending++;
+        else if (e.type === 'anomaly') box.anomaly++;
+      }
     });
 
     return {
-      categories: boxes.map(b => b.label),
-      completed: boxes.map(b => b.completed),
-      pending: boxes.map(b => b.pending),
-      anomaly: boxes.map(b => b.anomaly),
+      categories: boxes.map((b) => b.label),
+      completed: boxes.map((b) => b.completed),
+      pending: boxes.map((b) => b.pending),
+      anomaly: boxes.map((b) => b.anomaly),
     };
   });
 
-  // ✅ 6. Chart Options (Reactive Stacked Bar)
+  // Chart Options (Reactive Stacked Bar)
   readonly chartOption = computed<EChartsOption>(() => {
     const data = this.chartData();
 
@@ -134,8 +122,8 @@ export class TimeLine {
       xAxis: {
         type: 'value',
         splitLine: {
-            show: true,
-            lineStyle: { color: 'rgba(0,0,0,0.05)' }
+          show: true,
+          lineStyle: { color: 'rgba(0,0,0,0.05)' },
         },
         axisLabel: { color: '#9ca3af' },
       },
@@ -174,7 +162,7 @@ export class TimeLine {
           data: data.anomaly,
           itemStyle: { color: '#ef4444' }, // Red
           animationDelay: (idx) => idx * 10 + 200,
-        }
+        },
       ],
       animationEasing: 'elasticOut',
       animationDelayUpdate: (idx) => idx * 5,

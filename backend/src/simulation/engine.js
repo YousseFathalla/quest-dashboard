@@ -1,8 +1,3 @@
-/**
- * @fileoverview Core simulation engine for generating workflow events.
- * Handles event generation loops, updating global state, and broadcasting to SSE clients.
- */
-
 import { store } from "../data/store.js";
 import streamManager from "../utils/stream-manager.js";
 import { updateMetrics, randomSeverity, randomType } from "./generator.js";
@@ -60,21 +55,24 @@ export function startSimulation() {
         store.anomalies.push(event);
       }
 
-      // 1.5 Limit Store Size (Prevent Memory Leak)
-      const MAX_EVENTS = 5000;
+      // keep memory usage stable by capping the event history
+      const MAX_EVENTS = 6000;
+      const RESET_LEVEL = 2000;
+
       if (store.events.length > MAX_EVENTS) {
-        // Remove oldest events
-        store.events = store.events.slice(-MAX_EVENTS);
-        // Also cleanup anomalies if needed, though they are fewer
+        // flush old events, keep the recent ones
+        store.events = store.events.slice(-RESET_LEVEL);
+        
+        // do the same for anomalies
         if (store.anomalies.length > MAX_EVENTS) {
-          store.anomalies = store.anomalies.slice(-MAX_EVENTS);
+          store.anomalies = store.anomalies.slice(-RESET_LEVEL);
         }
       }
 
-      // 2. Recalculate Stats
+      // refresh the aggregated metrics
       updateMetrics();
 
-      // 3. Broadcast via Singleton (No more globalThis!)
+      // push the new event to all active streams
       streamManager.broadcast(event);
 
       runLoop();

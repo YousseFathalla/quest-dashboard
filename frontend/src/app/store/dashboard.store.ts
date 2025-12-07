@@ -1,8 +1,3 @@
-/**
- * @fileoverview Main state management store for the Dashboard using NgRx SignalStore.
- * Handles data fetching, real-time updates via SSE, and state mutations.
- */
-
 import {
   patchState,
   signalStore,
@@ -23,10 +18,8 @@ import { AnomalyNotificationService } from '@core/services/anomaly-notification.
 import { DashboardService } from '@core/services/dashboard.service';
 import { initialState } from './dashboard.slice';
 
-/**
- * The DashboardStore manages the application state.
- * It uses NgRx Signals for reactivity and state management.
- */
+// The DashboardStore manages the application state.
+// It uses NgRx Signals for reactivity and state management.
 export const DashboardStore = signalStore(
   { providedIn: 'root' },
   withDevtools('dashboard'),
@@ -150,7 +143,7 @@ export const DashboardStore = signalStore(
           setConnectionState('disconnected');
           connectLiveStream(false);
 
-          return timer(10000).pipe(
+          return timer(5000).pipe(
             take(1),
             tap(() => {
               patchState(store, { isStreamActive: true });

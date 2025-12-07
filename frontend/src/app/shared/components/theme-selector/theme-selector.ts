@@ -1,8 +1,3 @@
-/**
- * @fileoverview Component for selecting the application theme.
- * Provides a menu to switch between different visual themes (light/dark, color palettes).
- */
-
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';

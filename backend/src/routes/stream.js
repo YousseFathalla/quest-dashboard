@@ -1,7 +1,3 @@
-/**
- * @fileoverview Express router for handling Server-Sent Events (SSE) stream.
- */
-
 import { Router } from "express";
 import streamManager from "../utils/stream-manager.js";
 

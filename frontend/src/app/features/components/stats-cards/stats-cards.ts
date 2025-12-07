@@ -6,11 +6,6 @@ import { DashboardStore } from 'app/store/dashboard.store';
 import { DurationPipe } from '@core/pipes/duration.pipe';
 import { SkeletonLoader } from '@shared/components/skeleton-loader/skeleton-loader';
 
-/**
- * @fileoverview Stats Cards component.
- * Displays summary statistics including SLA Compliance, Avg Cycle Time, Active Anomalies, and Total Workflows.
- */
-
 @Component({
   selector: 'app-stats-cards',
   imports: [

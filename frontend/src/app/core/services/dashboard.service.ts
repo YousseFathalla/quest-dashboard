@@ -5,13 +5,9 @@ import { env } from '@env/environment';
 import { LogEvent, OverviewStats } from '@models/dashboard.types';
 import { connectSSE } from '@core/tools/sse-stream';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly http = inject(HttpClient);
-
-
 
   getSnapshot(): Observable<{ overview: OverviewStats; events: LogEvent[] }> {
     return this.http.get<{ overview: OverviewStats; events: LogEvent[] }>(
@@ -19,10 +15,13 @@ export class DashboardService {
     );
   }
 
+  connectToStream(options: { onOpen: () => void; onError: () => void }): Observable<LogEvent> {
+    return connectSSE<LogEvent>(`${env.baseUrl}/stream`, options);
+  }
+
   // --- Legacy API Implementations (Unused) ---
   // Implemented to demonstrate compliance with challenge requirements.
   // We prefer getSnapshot() for atomic data loading.
-
   getOverview(): Observable<OverviewStats> {
     return this.http.get<OverviewStats>(`${env.baseUrl}/stats/overview`);
   }
@@ -33,12 +32,5 @@ export class DashboardService {
 
   getAnomalies(): Observable<LogEvent[]> {
     return this.http.get<LogEvent[]>(`${env.baseUrl}/stats/anomalies`);
-  }
-
-  connectToStream(options: {
-    onOpen: () => void;
-    onError: () => void;
-  }): Observable<LogEvent> {
-    return connectSSE<LogEvent>(`${env.baseUrl}/stream`, options);
   }
 }

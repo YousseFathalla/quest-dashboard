@@ -1,43 +1,20 @@
-/**
- * @fileoverview Manages Server-Sent Events (SSE) connections.
- * Handles adding clients and broadcasting messages to all connected clients.
- */
-
 class StreamManager {
-  /**
-   * Initializes a new instance of the StreamManager.
-   * Creates a Set to store connected client response objects.
-   */
   constructor() {
-    /**
-     * @type {Set<import("express").Response>}
-     * @description A set of active client response objects.
-     */
+    // track active connections so we can push updates to them
     this.clients = new Set();
   }
 
-  /**
-   * Adds a new client to the stream manager.
-   * Returns a cleanup function to remove the client when the connection closes.
-   *
-   * @param {import("express").Response} res - The Express response object for the client.
-   * @returns {Function} A function that removes the client from the set.
-   */
+  // registers a new client and gives back a function to disconnect them
   addClient(res) {
     this.clients.add(res);
     return () => this.clients.delete(res);
   }
 
-  /**
-   * Broadcasts an event to all connected clients via SSE.
-   * Formats the data as a stringified JSON object and writes it to each client's stream.
-   * Handles disconnected or non-writable clients by removing them from the set.
-   *
-   * @param {Object} event - The event data to broadcast.
-   */
+  // pushes a new event to everyone currently listening
   broadcast(event) {
     const data = `data: ${JSON.stringify(event)}\n\n`;
     this.clients.forEach((client) => {
+      // only try writing if the connection is actually open
       if (client.writable && !client.finished) {
         try {
           client.write(data);
@@ -46,11 +23,12 @@ class StreamManager {
           this.clients.delete(client);
         }
       } else {
+        // clean up dead connections
         this.clients.delete(client);
       }
     });
   }
 }
 
-// Export as a Singleton Instance
+// singleton instance so we share the same list of clients everywhere
 export default new StreamManager();

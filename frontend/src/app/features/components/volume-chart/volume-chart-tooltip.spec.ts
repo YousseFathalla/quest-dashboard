@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 
-/**
- * Tooltip formatter function extracted from VolumeChart component
- */
+
+// Tooltip formatter function extracted from VolumeChart component
+
 function formatVolumeTooltip(
   params: Array<{
     axisValue?: string;

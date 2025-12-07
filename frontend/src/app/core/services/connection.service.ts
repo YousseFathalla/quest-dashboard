@@ -1,9 +1,4 @@
-/**
- * @fileoverview Service for managing connection status notifications.
- * Displays snackbars for disconnection, reconnection, and errors.
- */
-
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
 import { RetrySnackbar } from '@shared/components/retry-snackbar/retry-snackbar';
 
@@ -12,29 +7,39 @@ export class ConnectionService {
   private readonly snackBar = inject(MatSnackBar);
   private snackBarRef: MatSnackBarRef<RetrySnackbar> | null = null;
   private hasShownDisconnect = false;
+  private countdownInterval?: ReturnType<typeof setInterval>;
 
-  /**
-   * Displays a persistent snackbar indicating that the stream is disconnected.
-   */
+  // Displays a persistent snackbar indicating that the stream is disconnected.
   showDisconnected(): void {
     this.hasShownDisconnect = true;
     this.dismissSnackbar();
+
+    const countdown = signal(5);
+    this.countdownInterval = setInterval(() => {
+      countdown.update((v) => Math.max(0, v - 1));
+    }, 1000);
+
     this.snackBarRef = this.snackBar.openFromComponent(RetrySnackbar, {
       data: {
-        message: 'Stream disconnected. Reconnecting...',
+        message: 'Stream disconnected. Retrying in',
         icon: 'wifi_off',
+        countdown,
       },
-      duration: 10000,
+      duration: 5000,
       panelClass: ['snackbar-error', 'error'],
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
+
+    this.snackBarRef.afterDismissed().subscribe(() => {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
+    });
   }
 
-  /**
-   * Displays a success snackbar indicating that the stream has reconnected.
-   * Only shows if a disconnection message was previously shown.
-   */
+  // Displays a success snackbar indicating that the stream has reconnected.
+  // Only shows if a disconnection message was previously shown.
   showConnected(): void {
     if (!this.hasShownDisconnect) return;
 
@@ -66,10 +71,13 @@ export class ConnectionService {
     });
   }
 
-  /**
-   * Dismisses the currently active snackbar, if any.
-   */
+  // Dismisses the currently active snackbar, if any.
   private dismissSnackbar(): void {
+    if (this.countdownInterval) {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+      }
+    }
     this.snackBarRef?.dismiss();
     this.snackBarRef = null;
   }

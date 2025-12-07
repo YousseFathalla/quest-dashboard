@@ -1,8 +1,3 @@
-/**
- * @fileoverview Snackbar component for displaying anomaly notifications.
- * Shows the title and severity of the detected anomaly.
- */
-
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
@@ -23,9 +18,9 @@ export interface AnomalySnackbarData {
         <span class="mat-font-label-lg mat-text-primary-container">
           {{ data.title | titlecase }}
         </span>
-        <span class="mat-font-label-sm mat-text-primary-container"
-          >Severity - {{ data.severityLabel }}</span
-        >
+        <span class="mat-font-label-sm mat-text-primary-container">
+          Severity - {{ data.severityLabel }}
+        </span>
       </div>
     </div>
   `,

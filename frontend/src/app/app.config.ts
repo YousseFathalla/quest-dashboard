@@ -1,8 +1,3 @@
-/**
- * @fileoverview Application Configuration.
- * Sets up global providers including Routing, HTTP Client (with interceptors), and ECharts configuration.
- */
-
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -32,9 +27,7 @@ echarts.use([
   CanvasRenderer,
 ]);
 
-/**
- * Global application configuration object.
- */
+// Global application configuration object.
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

@@ -1,8 +1,3 @@
-/**
- * @fileoverview Utilities for mapping event statuses and severities to UI colors and styles.
- * Used for styling chips, dots, and tooltips based on event data.
- */
-
 export type EventStatus = 'completed' | 'pending' | 'anomaly';
 export type EventSeverity = 'CRITICAL' | 'WARNING' | 'INFO';
 

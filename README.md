@@ -111,6 +111,17 @@ quest-dashboard/
 
    The frontend will be available at `http://localhost:4200`.
 
+### ⚙️ Environment Variables
+
+The application supports the following environment variables for configuration:
+
+| Service | Variable | Description | Default |
+| :--- | :--- | :--- | :--- |
+| **Backend** | `PORT` | Port number for the API server | `3000` |
+| **Backend** | `NODE_ENV` | Environment mode (`development` / `production`) | `development` |
+| **Backend** | `CORS_ORIGIN` | Allowed frontend origin for CORS | `*` |
+| **Frontend** | `NG_APP_API_URL` | Base URL for the backend API | `http://localhost:3000` |
+
 ### Docker Deployment
 
 Run the entire stack with a single command:

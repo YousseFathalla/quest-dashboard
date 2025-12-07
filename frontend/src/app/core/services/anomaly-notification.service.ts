@@ -1,8 +1,3 @@
-/**
- * @fileoverview Service for handling anomaly notifications.
- * Uses MatSnackBar to display alerts when anomalies are detected.
- */
-
 import { Injectable, inject } from '@angular/core';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
 import { LogEvent, Severity } from '@models/dashboard.types';
@@ -43,14 +38,8 @@ export class AnomalyNotificationService {
    * @returns {string} The formatted severity label.
    */
   private formatSeverity(severity?: Severity): string {
-    if (typeof severity === 'number') {
-      return `Level ${severity}`;
-    }
-
-    if (severity === 'high') {
-      return 'High';
-    }
-
+    if (typeof severity === 'number') return `Level ${severity}`;
+    if (severity === 'high') return 'High';
     return 'Normal';
   }
 }
