@@ -81,9 +81,9 @@ export const DashboardStore = signalStore(
             }),
             retry({
               count: 3, // Reduced retry count for faster feedback
-              delay: (_, retryCount) => {
-                // Only keep loading state true, don't flicker false
-                return timer(1000 * retryCount).pipe(take(1));
+              delay: (error, retryCount) => {
+                // Retry delay starts at 3s and increases by 1s each time (3s, 4s, 5s)
+                return timer((2 + retryCount) * 1000).pipe(take(1));
               },
             }),
             catchError((err) => {
