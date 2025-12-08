@@ -56,8 +56,8 @@ export function startSimulation() {
       }
 
       // keep memory usage stable by capping the event history
-      const MAX_EVENTS = 6000;
-      const RESET_LEVEL = 2000;
+      const MAX_EVENTS = 12000;
+      const RESET_LEVEL = 9000;
 
       if (store.events.length > MAX_EVENTS) {
         // flush old events, keep the recent ones
